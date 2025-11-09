@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Calendar, Users, Package, DollarSign, BarChart3, Search, Plus, X, AlertTriangle, CheckCircle, Clock, Trash2, LogOut } from 'lucide-react';
-import { LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Calendar, Users, Package, DollarSign, BarChart3, Search, Plus, X, AlertTriangle, CheckCircle, Clock, Trash2, LogOut, UserCheck } from 'lucide-react';
 
 export default function TuxedoAdmin() {
   const [user, setUser] = useState(null);
@@ -11,72 +10,46 @@ export default function TuxedoAdmin() {
   const [tab, setTab] = useState('dashboard');
   const [rentals, setRentals] = useState([]);
 
-  // ONLY RUN IN BROWSER — FIXES localStorage ERROR
   useEffect(() => {
     const saved = localStorage.getItem('tuxedo-rentals');
-    if (saved) {
-      setRentals(JSON.parse(saved));
-    } else {
-      // Default data
-      const defaultRentals = [
-        { id: 1, name: 'John Smith', pickup: '2025-11-08', return: '2025-11-08', status: 'out', total: 165, paid: 165 },
-        { id: 2, name: 'Sarah Johnson', pickup: '2025-11-10', return: '2025-11-12', status: 'reserved', total: 120, paid: 50 }
+    if (saved) setRentals(JSON.parse(saved));
+    else {
+      const defaults = [
+        { id: 1, customerName: 'John Smith', pickupDate: '2025-11-08', returnDate: '2025-11-08', status: 'out', total: 165, paid: 165 },
+        { id: 2, customerName: 'Sarah Johnson', pickupDate: '2025-11-10', returnDate: '2025-11-12', status: 'reserved', total: 120, paid: 50 }
       ];
-      setRentals(defaultRentals);
-      localStorage.setItem('tuxedo-rentals', JSON.stringify(defaultRentals));
+      setRentals(defaults);
+      localStorage.setItem('tuxedo-rentals', JSON.stringify(defaults));
     }
   }, []);
 
-  // Save to localStorage whenever rentals change
   useEffect(() => {
-    if (rentals.length > 0) {
-      localStorage.setItem('tuxedo-rentals', JSON.stringify(rentals));
-    }
+    if (rentals.length > 0) localStorage.setItem('tuxedo-rentals', JSON.stringify(rentals));
   }, [rentals]);
 
   const today = new Date().toISOString().split('T')[0];
-  const overdue = rentals.filter(r => r.return < today && r.status !== 'returned');
-  const pickupsToday = rentals.filter(r => r.pickup === today);
-  const returnsToday = rentals.filter(r => r.return === today);
+  const overdue = rentals.filter(r => r.returnDate < today && r.status !== 'returned');
+  const pickups = rentals.filter(r => r.pickupDate === today && r.status === 'reserved');
+  const returns = rentals.filter(r => r.returnDate === today);
 
   const login = (e) => {
     e.preventDefault();
     if (form.username === 'admin' && form.password === 'admin123') {
-      setUser({ name: 'Admin' });
+      setUser({ name: 'Admin User', role: 'admin' });
       setIsLogin(false);
-    } else {
-      alert('Login: admin / admin123');
-    }
+    } else alert('Use: admin / admin123');
   };
 
   if (isLogin) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex items-center justify-center p-6">
-        <div className="bg-white/95 backdrop-blur-lg rounded-3xl shadow-2xl p-12 w-full max-w-lg border border-white/20">
-          <h1 className="text-6xl font-extrabold text-center mb-10 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-            Tuxedo Admin
-          </h1>
-          <form onSubmit={login} className="space-y-8">
-            <input
-              type="text"
-              placeholder="Username"
-              className="w-full px-8 py-5 text-xl border-4 border-purple-200 rounded-2xl focus:border-purple-500 focus:outline-none transition"
-              onChange={e => setForm({ ...form, username: e.target.value })}
-              required
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              className="w-full px-8 py-5 text-xl border-4 border-purple-200 rounded-2xl focus:border-purple-500 focus:outline-none transition"
-              onChange={e => setForm({ ...form, password: e.target.value })}
-              required
-            />
-            <button type="submit" className="w-full py-6 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-2xl font-bold rounded-2xl hover:from-purple-700 hover:to-pink-700 transition shadow-2xl">
-              ENTER SYSTEM
-            </button>
-            <div className="text-center bg-purple-100 p-4 rounded-xl">
-              <p className="font-bold text-purple-800">admin / admin123</p>
-            </div>
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
+        <div className="bg-white rounded-xl shadow-2xl p-10 w-full max-w-md">
+          <h1 className="text-4xl font-bold text-center mb-8 text-slate-800">Tuxedo Rental Admin</h1>
+          <form onSubmit={login} className="space-y-6">
+            <input type="text" placeholder="Username" className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg" onChange={e => setForm({...form, username: e.target.value})} required />
+            <input type="password" placeholder="Password" className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg" onChange={e => setForm({...form, password: e.target.value})} required />
+            <button type="submit" className="w-full py-4 bg-slate-800 text-white rounded-lg font-bold hover:bg-slate-700">Login</button>
+            <p className="text-center text-sm text-slate-600">admin / admin123</p>
           </form>
         </div>
       </div>
@@ -84,111 +57,89 @@ export default function TuxedoAdmin() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50">
-      <header className="bg-gradient-to-r from-purple-800 via-pink-700 to-indigo-800 text-white shadow-2xl">
-        <div className="max-w-7xl mx-auto px-8 py-8 flex justify-between items-center">
-          <h1 className="text-5xl font-extrabold tracking-tight">Tuxedo Rental Admin</h1>
-          <button onClick={() => setIsLogin(true)} className="flex items-center gap-4 px-8 py-4 bg-white/20 rounded-2xl hover:bg-white/30 transition backdrop-blur">
-            <LogOut size={28} /> <span className="text-xl font-bold">Logout</span>
-          </button>
+    <div className="min-h-screen bg-gray-50">
+      {/* YOUR ORIGINAL HEADER */}
+      <header className="bg-slate-900 text-white p-4 shadow-lg">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <h1 className="text-2xl font-bold">Tuxedo Rental Admin</h1>
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <div className="font-medium">{user.name}</div>
+              <div className="text-sm opacity-75">Admin Access</div>
+            </div>
+            <button onClick={() => setIsLogin(true)} className="flex items-center gap-2 px-4 py-2 bg-slate-700 rounded hover:bg-slate-600">
+              <LogOut size={18} /> Logout
+            </button>
+          </div>
         </div>
       </header>
 
-      <nav className="bg-white/90 backdrop-blur sticky top-0 z-50 shadow-xl">
-        <div className="max-w-7xl mx-auto flex">
-          {['dashboard', 'rentals', 'analytics'].map(t => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`px-12 py-6 text-xl font-bold capitalize transition ${tab === t ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
-            >
-              {t === 'dashboard' && <Clock className="inline mr-3" size={28} />}
-              {t === 'rentals' && <Calendar className="inline mr-3" size={28} />}
-              {t === 'analytics' && <BarChart3 className="inline mr-3" size={28} />}
-              {t}
-            </button>
-          ))}
+      {/* YOUR ORIGINAL TABS */}
+      <nav className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex space-x-1">
+            {[
+              { id: 'dashboard', label: 'Today', icon: Clock },
+              { id: 'rentals', label: 'Rentals', icon: Calendar },
+              { id: 'customers', label: 'Customers', icon: Users },
+              { id: 'inventory', label: 'Inventory', icon: Package },
+              { id: 'billing', label: 'Billing', icon: DollarSign },
+              { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+              { id: 'users', label: 'Users', icon: UserCheck }
+            ].map(t => {
+              const Icon = t.icon;
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => setTab(t.id)}
+                  className={`flex items-center gap-2 px-6 py-4 border-b-4 font-medium transition ${
+                    tab === t.id ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <Icon size={20} /> {t.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto p-10">
+      <main className="max-w-7xl mx-auto p-6">
         {tab === 'dashboard' && (
           <div>
-            <h2 className="text-6xl font-extrabold mb-12 text-gray-800">
-              Today: {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
-            </h2>
+            <h2 className="text-3xl font-bold mb-8">Today's Tasks — {new Date().toLocaleDateString()}</h2>
 
             {overdue.length > 0 && (
-              <div className="bg-gradient-to-r from-red-600 to-rose-600 text-white p-12 rounded-3xl mb-12 shadow-2xl border-4 border-red-700">
-                <h3 className="text-5xl font-extrabold mb-8 flex items-center gap-6">
-                  <AlertTriangle size={64} /> OVERDUE ALERT ({overdue.length})
-                </h3>
+              <div className="bg-red-50 border-l-4 border-red-500 p-6 mb-8 rounded-r">
+                <h3 className="text-xl font-bold text-red-800 mb-4">Overdue Returns ({overdue.length})</h3>
                 {overdue.map(r => (
-                  <div key={r.id} className="bg-white/20 p-8 rounded-2xl mb-6 backdrop-blur">
-                    <p className="text-3xl font-bold">{r.name}</p>
-                    <p className="text-2xl">Due: {r.return} → {(new Date(today) - new Date(r.return)) / 86400000} days late</p>
+                  <div key={r.id} className="bg-white p-4 rounded shadow mb-3">
+                    <p className="font-semibold">{r.customerName}</p>
+                    <p className="text-sm text-red-600">Due: {r.returnDate}</p>
                   </div>
                 ))}
               </div>
             )}
 
-            <div className="grid lg:grid-cols-2 gap-12">
-              <div className="bg-white p-12 rounded-3xl shadow-2xl border-4 border-green-400">
-                <h3 className="text-4xl font-bold mb-8 flex items-center gap-5 text-green-600">
-                  <CheckCircle size={56} /> Pickups Today ({pickupsToday.length})
-                </h3>
-                {pickupsToday.length === 0 ? (
-                  <p className="text-2xl text-gray-500">No pickups scheduled</p>
-                ) : (
-                  pickupsToday.map(r => (
-                    <div key={r.id} className="bg-green-50 p-8 rounded-2xl mb-6">
-                      <p className="text-2xl font-bold">{r.name}</p>
-                    </div>
-                  ))
-                )}
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="bg-white p-8 rounded-lg shadow">
+                <h3 className="text-xl font-bold mb-4 flex items-center gap-3"><CheckCircle className="text-green-600" /> Pickups Today ({pickups.length})</h3>
+                {pickups.length === 0 ? <p className="text-gray-500">No pickups</p> : pickups.map(r => <div key={r.id} className="p-3 bg-green-50 rounded mb-2"><strong>{r.customerName}</strong></div>)}
               </div>
-
-              <div className="bg-white p-12 rounded-3xl shadow-2xl border-4 border-blue-400">
-                <h3 className="text-4xl font-bold mb-8 flex items-center gap-5 text-blue-600">
-                  <Package size={56} /> Returns Today ({returnsToday.length})
-                </h3>
-                {returnsToday.length === 0 ? (
-                  <p className="text-2xl text-gray-500">No returns scheduled</p>
-                ) : (
-                  returnsToday.map(r => (
-                    <div key={r.id} className="bg-blue-50 p-8 rounded-2xl mb-6">
-                      <p className="text-2xl font-bold">{r.name}</p>
-                    </div>
-                  ))
-                )}
+              <div className="bg-white p-8 rounded-lg shadow">
+                <h3 className="text-xl font-bold mb-4 flex items-center gap-3"><Calendar className="text-blue-600" /> Returns Today ({returns.length})</h3>
+                {returns.length === 0 ? <p className="text-gray-500">No returns</p> : returns.map(r => <div key={r.id} className="p-3 bg-blue-50 rounded mb-2"><strong>{r.customerName}</strong></div>)}
               </div>
             </div>
           </div>
         )}
 
-        {tab === 'analytics' && (
-          <div className="bg-white p-16 rounded-3xl shadow-2xl">
-            <h2 className="text-5xl font-extrabold mb-12 text-center bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-              Revenue Dashboard
-            </h2>
-            <ResponsiveContainer width="100%" height={600}>
-              <LineChart data={[
-                { month: 'Jan', revenue: 5200 },
-                { month: 'Feb', revenue: 4800 },
-                { month: 'Mar', revenue: 6100 },
-                { month: 'Apr', revenue: 5900 },
-                { month: 'May', revenue: 8200 },
-                { month: 'Jun', revenue: 9800 },
-              ]}>
-                <CartesianGrid strokeDasharray="5 5" stroke="#ddd" />
-                <XAxis dataKey="month" tick={{ fontSize: 20 }} />
-                <YAxis tick={{ fontSize: 20 }} />
-                <Tooltip formatter={(v) => `$${v.toLocaleString()}`} contentStyle={{ background: '#333', border: 'none', borderRadius: '12px' }} />
-                <Line type="monotone" dataKey="revenue" stroke="#c084fc" strokeWidth={8} dot={{ fill: '#c084fc', r: 12 }} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        )}
+        {tab === 'rentals' && <div className="bg-white p-8 rounded-lg shadow"><h2 className="text-2xl font-bold mb-6">All Rentals</h2><p className="text-gray-600">Full rentals list coming soon...</p></div>}
+        {tab === 'customers' && <div className="bg-white p-8 rounded-lg shadow"><h2 className="text-2xl font-bold mb-6">Customers</h2><p className="text-gray-600">Customer management...</p></div>}
+        {tab === 'inventory' && <div className="bg-white p-8 rounded-lg shadow"><h2 className="text-2xl font-bold mb-6">Inventory</h2><p className="text-gray-600">Track tuxedos, shoes, accessories...</p></div>}
+        {tab === 'billing' && <div className="bg-white p-8 rounded-lg shadow"><h2 className="text-2xl font-bold mb-6">Billing</h2><p className="text-gray-600">Payments & invoices...</p></div>}
+        {tab === 'analytics' && <div className="bg-white p-8 rounded-lg shadow"><h2 className="text-2xl font-bold mb-6">Analytics</h2><p className="text-gray-600">Revenue charts coming soon...</p></div>}
+        {tab === 'users' && <div className="bg-white p-8 rounded-lg shadow"><h2 className="text-2xl font-bold mb-6">User Management</h2><p className="text-gray-600">Admin only area...</p></div>}
       </main>
     </div>
   );
