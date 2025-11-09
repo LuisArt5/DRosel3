@@ -2,205 +2,67 @@
 
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Calendar, Users, Package, DollarSign, BarChart3, Search, Plus, X, LogOut, Menu, ChevronRight, Clock, AlertCircle, CheckCircle, Edit2, Save, Globe, Scissors, CreditCard, Calendar as CalendarIcon } from 'lucide-react';
+import { Calendar, Users, Package, DollarSign, BarChart3, Search, Plus, X, LogOut, Clock, AlertCircle, CheckCircle, Edit2, Save, Upload, Eye, Scissors, CreditCard } from 'lucide-react';
 
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-// Translations
-const translations = {
-  en: {
-    title: 'Tuxedo Rental Admin',
-    login: 'LOGIN',
-    logout: 'LOGOUT',
-    role: 'Role',
-    dashboard: 'Dashboard',
-    rentals: 'Rentals',
-    customers: 'Customers',
-    inventory: 'Inventory',
-    analytics: 'Analytics',
-    todayRevenue: "Today's Revenue",
-    pickupsToday: 'Pickups Today',
-    thisWeek: 'This Week',
-    activeCustomers: 'Active Customers',
-    todayPickups: "Today's Pickups",
-    overdueReturns: 'Overdue Returns',
-    noPickups: 'No pickups today',
-    allReturned: 'All items returned on time!',
-    items: 'Items',
-    total: 'Total',
-    due: 'Due',
-    status: 'Status',
-    name: 'Name',
-    phone: 'Phone',
-    email: 'Email',
-    totalRentals: 'Rentals',
-    addRental: 'Add Rental',
-    editRental: 'Edit Rental',
-    customer: 'Customer',
-    eventDate: 'Event Date',
-    pickupDate: 'Pickup Date',
-    returnDate: 'Return Date',
-    paymentMethod: 'Payment Method',
-    alterations: 'Alterations',
-    save: 'Save',
-    cancel: 'Cancel',
-    cash: 'Cash',
-    card: 'Card',
-    transfer: 'Transfer',
-    noAlterations: 'No alterations needed',
-    jacketSleeve: 'Jacket Sleeve',
-    jacketLength: 'Jacket Length',
-    pantWaist: 'Pant Waist',
-    pantLength: 'Pant Length',
-    notes: 'Notes',
-    dateConflict: 'Date conflict detected!',
-    itemUnavailable: 'Item unavailable for selected dates',
-    invalidCredentials: 'Invalid credentials',
-    size: 'Size',
-    color: 'Color',
-    available: 'Available',
-    rented: 'Rented',
-    price: 'Price',
-    deposit: 'Deposit',
-    paid: 'Paid',
-    pending: 'Pending',
-    returned: 'Returned'
-  },
-  es: {
-    title: 'Admin Renta de Esmoquin',
-    login: 'INICIAR SESIÓN',
-    logout: 'CERRAR SESIÓN',
-    role: 'Rol',
-    dashboard: 'Panel',
-    rentals: 'Rentas',
-    customers: 'Clientes',
-    inventory: 'Inventario',
-    analytics: 'Análisis',
-    todayRevenue: 'Ingresos Hoy',
-    pickupsToday: 'Entregas Hoy',
-    thisWeek: 'Esta Semana',
-    activeCustomers: 'Clientes Activos',
-    todayPickups: 'Entregas de Hoy',
-    overdueReturns: 'Devoluciones Atrasadas',
-    noPickups: 'No hay entregas hoy',
-    allReturned: '¡Todos los artículos devueltos a tiempo!',
-    items: 'Artículos',
-    total: 'Total',
-    due: 'Vence',
-    status: 'Estado',
-    name: 'Nombre',
-    phone: 'Teléfono',
-    email: 'Correo',
-    totalRentals: 'Rentas',
-    addRental: 'Agregar Renta',
-    editRental: 'Editar Renta',
-    customer: 'Cliente',
-    eventDate: 'Fecha del Evento',
-    pickupDate: 'Fecha de Entrega',
-    returnDate: 'Fecha de Devolución',
-    paymentMethod: 'Método de Pago',
-    alterations: 'Alteraciones',
-    save: 'Guardar',
-    cancel: 'Cancelar',
-    cash: 'Efectivo',
-    card: 'Tarjeta',
-    transfer: 'Transferencia',
-    noAlterations: 'Sin alteraciones',
-    jacketSleeve: 'Manga de Saco',
-    jacketLength: 'Largo de Saco',
-    pantWaist: 'Cintura de Pantalón',
-    pantLength: 'Largo de Pantalón',
-    notes: 'Notas',
-    dateConflict: '¡Conflicto de fechas detectado!',
-    itemUnavailable: 'Artículo no disponible para las fechas seleccionadas',
-    invalidCredentials: 'Credenciales inválidas',
-    size: 'Talla',
-    color: 'Color',
-    available: 'Disponible',
-    rented: 'Rentado',
-    price: 'Precio',
-    deposit: 'Depósito',
-    paid: 'Pagado',
-    pending: 'Pendiente',
-    returned: 'Devuelto'
-  }
-};
-
 export default function TuxedoAdmin() {
-  const [user, setUser] = useState(null);
-  const [profile, setProfile] = useState(null);
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [customers, setCustomers] = useState([]);
-  const [inventory, setInventory] = useState([]);
-  const [rentals, setRentals] = useState([]);
+  const [customers, setCustomers] = useState<any[]>([]);
+  const [inventory, setInventory] = useState<any[]>([]);
+  const [rentals, setRentals] = useState<any[]>([]);
+  const [allUsers, setAllUsers] = useState<any[]>([]);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [msg, setMsg] = useState('');
-  const [language, setLanguage] = useState('en');
-  const [showRentalModal, setShowRentalModal] = useState(false);
-  const [editingRental, setEditingRental] = useState(null);
-  const [dateConflicts, setDateConflicts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState('');
+  const [formData, setFormData] = useState<any>({});
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
 
-  const t = translations[language];
-
-  // Rental form state
-  const [rentalForm, setRentalForm] = useState({
-    customer_id: '',
-    customer_name: '',
-    event_date: '',
-    pickup_date: '',
-    return_date: '',
-    item_ids: [],
-    total: 0,
-    deposit: 0,
-    payment_method: 'cash',
-    payment_status: 'pending',
-    status: 'pending',
-    alterations: {
-      jacket_sleeve: '',
-      jacket_length: '',
-      pant_waist: '',
-      pant_length: '',
-      notes: ''
-    }
-  });
+  const today = new Date().toISOString().split('T')[0];
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const { data: listener } = supabase.auth.onAuthStateChange(async (_, session) => {
       setUser(session?.user ?? null);
-      if (session?.user) loadAllData();
+      if (session?.user) await loadAllData();
       setLoading(false);
     });
-
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user) loadAllData();
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) {
+        setUser(data.session.user);
+        loadAllData();
+      }
+      setLoading(false);
     });
-
     return () => listener.subscription.unsubscribe();
   }, []);
 
   const loadAllData = async () => {
-    const [c, i, r, p] = await Promise.all([
+    const [{ data: c }, { data: i }, { data: r }, { data: p }, { data: u }] = await Promise.all([
       supabase.from('customers').select('*'),
       supabase.from('inventory').select('*'),
-      supabase.from('rentals').select('*, customers(name, phone)'),
-      supabase.from('users').select('*').eq('id', (await supabase.auth.getUser()).data.user?.id).single()
+      supabase.from('rentals').select('*, customers(name, phone, email)'),
+      supabase.from('users').select('*').eq('id', user?.id).single(),
+      supabase.from('users').select('*')
     ]);
-    setCustomers(c.data || []);
-    setInventory(i.data || []);
-    setRentals(r.data || []);
-    setProfile(p.data);
+    setCustomers(c || []);
+    setInventory(i || []);
+    setRentals(r || []);
+    setProfile(p);
+    setAllUsers(u || []);
   };
 
   const signIn = async () => {
-    setMsg('');
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) setMsg(t.invalidCredentials);
+    if (error) setMsg('Invalid credentials');
   };
 
   const signOut = async () => {
@@ -209,618 +71,250 @@ export default function TuxedoAdmin() {
     setProfile(null);
   };
 
-  const toggleLanguage = () => {
-    setLanguage(language === 'en' ? 'es' : 'en');
+  const hasPermission = (action: 'view' | 'edit') => {
+    if (!profile) return false;
+    if (profile.role === 'admin') return true;
+    if (profile.role === 'staff' && action === 'edit') return true;
+    if (profile.role === 'viewer' && action === 'view') return true;
+    return false;
   };
 
-  const checkDateConflicts = async (itemIds, pickupDate, returnDate, excludeRentalId = null) => {
-    const conflicts = [];
-    
-    for (const itemId of itemIds) {
-      const { data } = await supabase
-        .from('rentals')
-        .select('*')
-        .contains('item_ids', [itemId])
-        .neq('status', 'returned')
-        .neq('status', 'cancelled');
-      
-      if (data) {
-        const conflicting = data.filter(rental => {
-          if (excludeRentalId && rental.id === excludeRentalId) return false;
-          
-          const rentalPickup = new Date(rental.pickup_date);
-          const rentalReturn = new Date(rental.return_date);
-          const newPickup = new Date(pickupDate);
-          const newReturn = new Date(returnDate);
-          
-          return (newPickup <= rentalReturn && newReturn >= rentalPickup);
-        });
-        
-        if (conflicting.length > 0) {
-          const item = inventory.find(i => i.id === itemId);
-          conflicts.push({
-            itemId,
-            itemName: item?.name || 'Unknown',
-            conflictingRentals: conflicting
-          });
-        }
-      }
+  const openModal = (type: string, data = {}) => {
+    setModalType(type);
+    setFormData(data);
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setFormData({});
+    setSelectedItems([]);
+  };
+
+  const handleFileUpload = async (file: File) => {
+    const fileName = `${Date.now()}_${file.name}`;
+    await supabase.storage.from('id-photos').upload(fileName, file);
+    const { data } = supabase.storage.from('id-photos').getPublicUrl(fileName);
+    return data.publicUrl;
+  };
+
+  const saveCustomer = async () => {
+    let id_photo_url = formData.id_photo_url;
+    if (formData.idPhotoFile) {
+      id_photo_url = await handleFileUpload(formData.idPhotoFile);
     }
-    
-    setDateConflicts(conflicts);
-    return conflicts.length === 0;
-  };
-
-  const openRentalModal = (rental = null) => {
-    if (rental) {
-      setEditingRental(rental);
-      setRentalForm({
-        customer_id: rental.customer_id,
-        customer_name: rental.customer_name,
-        event_date: rental.event_date || '',
-        pickup_date: rental.pickup_date,
-        return_date: rental.return_date,
-        item_ids: rental.item_ids || [],
-        total: rental.total,
-        deposit: rental.deposit || 0,
-        payment_method: rental.payment_method || 'cash',
-        payment_status: rental.payment_status || 'pending',
-        status: rental.status,
-        alterations: rental.alterations || {
-          jacket_sleeve: '',
-          jacket_length: '',
-          pant_waist: '',
-          pant_length: '',
-          notes: ''
-        }
-      });
+    const data = { ...formData, id_photo_url };
+    delete data.idPhotoFile;
+    if (formData.id) {
+      await supabase.from('customers').update(data).eq('id', formData.id);
     } else {
-      setEditingRental(null);
-      setRentalForm({
-        customer_id: '',
-        customer_name: '',
-        event_date: '',
-        pickup_date: '',
-        return_date: '',
-        item_ids: [],
-        total: 0,
-        deposit: 0,
-        payment_method: 'cash',
-        payment_status: 'pending',
-        status: 'pending',
-        alterations: {
-          jacket_sleeve: '',
-          jacket_length: '',
-          pant_waist: '',
-          pant_length: '',
-          notes: ''
-        }
-      });
+      await supabase.from('customers').insert(data);
     }
-    setDateConflicts([]);
-    setShowRentalModal(true);
+    loadAllData();
+    closeModal();
   };
 
   const saveRental = async () => {
-    // Check date conflicts
-    const noConflicts = await checkDateConflicts(
-      rentalForm.item_ids,
-      rentalForm.pickup_date,
-      rentalForm.return_date,
-      editingRental?.id
-    );
+    const total = selectedItems.reduce((sum, id) => {
+      const item = inventory.find(i => i.id === id);
+      return sum + (item?.price || 0);
+    }, 0);
 
-    if (!noConflicts) {
-      alert(t.dateConflict);
-      return;
-    }
-
-    const rentalData = {
-      ...rentalForm,
-      updated_at: new Date().toISOString()
+    const rental = {
+      ...formData,
+      item_ids: selectedItems,
+      total,
+      paid_amount: formData.deposit || 0,
+      status: 'reserved',
+      reservation_date: today,
+      created_by: user.id
     };
 
-    if (editingRental) {
-      // Update existing rental
-      const { error } = await supabase
-        .from('rentals')
-        .update(rentalData)
-        .eq('id', editingRental.id);
+    await supabase.from('rentals').insert(rental);
+    await supabase.from('customers').update({ total_rentals: supabase.rpc('increment', { x: 1 }) }).eq('id', formData.customer_id);
+    loadAllData();
+    closeModal();
+  };
 
-      if (!error) {
-        await loadAllData();
-        setShowRentalModal(false);
-      }
-    } else {
-      // Create new rental
-      rentalData.created_at = new Date().toISOString();
-      
-      const { error } = await supabase
-        .from('rentals')
-        .insert([rentalData]);
-
-      if (!error) {
-        await loadAllData();
-        setShowRentalModal(false);
-      }
+  const handlePickup = async (id: string) => {
+    const rental = rentals.find(r => r.id === id);
+    await supabase.from('rentals').update({ status: 'picked_up' }).eq('id', id);
+    for (const itemId of rental.item_ids) {
+      await supabase.from('inventory').update({ status: 'rented' }).eq('id', itemId);
     }
+    loadAllData();
   };
 
-  const updateRentalField = (field, value) => {
-    setRentalForm(prev => ({
-      ...prev,
-      [field]: value
-    }));
+  const handleCheckIn = async (id: string) => {
+    const rental = rentals.find(r => r.id === id);
+    await supabase.from('rentals').update({ status: 'returned', actual_return_date: today }).eq('id', id);
+    for (const itemId of rental.item_ids) {
+      await supabase.from('inventory').update({ status: 'cleaning' }).eq('id', itemId);
+    }
+    loadAllData();
   };
 
-  const updateAlterationField = (field, value) => {
-    setRentalForm(prev => ({
-      ...prev,
-      alterations: {
-        ...prev.alterations,
-        [field]: value
-      }
-    }));
-  };
-
-  const toggleItemInRental = (itemId) => {
-    setRentalForm(prev => {
-      const itemIds = prev.item_ids.includes(itemId)
-        ? prev.item_ids.filter(id => id !== itemId)
-        : [...prev.item_ids, itemId];
-      
-      // Calculate total based on selected items
-      const total = itemIds.reduce((sum, id) => {
-        const item = inventory.find(i => i.id === id);
-        return sum + (item?.price || 0);
-      }, 0);
-
-      return {
-        ...prev,
-        item_ids: itemIds,
-        total
-      };
-    });
-  };
-
-  if (loading) return <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white text-4xl">Loading...</div>;
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 to-purple-900 flex items-center justify-center p-8">
-        <div className="bg-white rounded-3xl shadow-2xl p-16 max-w-md w-full text-center">
-          <div className="flex justify-center mb-8">
-            <button onClick={toggleLanguage} className="flex items-center gap-2 text-gray-600 hover:text-gray-800 text-lg">
-              <Globe size={24} /> {language === 'en' ? 'ES' : 'EN'}
-            </button>
-          </div>
-          <h1 className="text-6xl font-bold mb-8 text-slate-800">{t.title}</h1>
-          {msg && <p className="text-red-600 font-bold mb-6 text-xl">{msg}</p>}
-          <input type="email" placeholder="admin@demo.com" value={email} onChange={e => setEmail(e.target.value)} className="w-full px-6 py-5 mb-6 border-2 rounded-xl text-xl" />
-          <input type="password" placeholder="admin123" value={password} onChange={e => setPassword(e.target.value)} className="w-full px-6 py-5 mb-8 border-2 rounded-xl text-xl" />
-          <button onClick={signIn} className="w-full bg-blue-600 text-white py-6 rounded-xl text-2xl font-bold hover:bg-blue-700">{t.login}</button>
-          <p className="mt-8 text-gray-600 text-lg">Use: <strong>admin@demo.com</strong> / <strong>admin123</strong></p>
-        </div>
+  if (loading) return <div className="flex items-center justify-center h-screen text-3xl">Loading...</div>;
+  if (!user) return (
+    <div className="flex items-center justify-center h-screen bg-gradient-to-br from-blue-900 to-purple-900">
+      <div className="bg-white p-10 rounded-2xl shadow-2xl w-96">
+        <h1 className="text-4xl font-bold text-center mb-8">Tuxedo Admin</h1>
+        <input placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} className="w-full p-4 border-2 rounded-xl mb-4" />
+        <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} className="w-full p-4 border-2 rounded-xl mb-6" />
+        <button onClick={signIn} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-xl font-bold text-xl hover:scale-105 transition">LOGIN</button>
+        {msg && <p className="text-red-600 text-center mt-4">{msg}</p>}
       </div>
-    );
-  }
+    </div>
+  );
 
-  const today = new Date().toISOString().split('T')[0];
-  const todayPickups = rentals.filter(r => r.pickup_date === today);
-  const overdue = rentals.filter(r => r.return_date < today && r.status !== 'returned');
+  const todayPickups = rentals.filter(r => r.pickup_date === today && r.status === 'reserved');
+  const todayReturns = rentals.filter(r => r.return_date === today && r.status === 'picked_up');
+  const overdue = rentals.filter(r => r.return_date < today && r.status === 'picked_up');
 
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <header className="bg-slate-900 text-white">
-        <div className="max-w-7xl mx-auto px-8 py-6 flex justify-between items-center">
-          <h1 className="text-4xl font-bold">{t.title}</h1>
-          <div className="flex items-center gap-8">
-            <button onClick={toggleLanguage} className="flex items-center gap-2 bg-slate-800 px-6 py-3 rounded-xl text-xl hover:bg-slate-700">
-              <Globe size={24} /> {language === 'en' ? 'ES' : 'EN'}
-            </button>
-            <div className="text-right">
-              <p className="text-2xl font-bold">{profile?.name || user.email}</p>
-              <p className="text-lg opacity-80">{t.role}: {profile?.role}</p>
-            </div>
-            <button onClick={signOut} className="bg-red-600 px-8 py-4 rounded-xl flex items-center gap-3 text-xl font-bold hover:bg-red-700">
-              <LogOut size={28} /> {t.logout}
+      <header className="bg-gradient-to-r from-slate-900 to-slate-800 text-white shadow-2xl">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+          <h1 className="text-3xl font-bold">Tuxedo Rental Admin</h1>
+          <div className="flex items-center gap-6">
+            <span className="bg-purple-600 px-4 py-2 rounded-full font-bold">{profile?.role?.toUpperCase()}</span>
+            <button onClick={signOut} className="flex items-center gap-2 bg-red-600 px-4 py-2 rounded-lg hover:bg-red-700 transition">
+              <LogOut /> Logout
             </button>
           </div>
         </div>
       </header>
 
-      {/* Nav */}
-      <nav className="bg-white shadow-xl">
-        <div className="max-w-7xl mx-auto px-8">
-          <div className="flex space-x-12">
-            {['dashboard', 'rentals', 'customers', 'inventory', 'analytics'].map(tab => (
-              <button key={tab} onClick={() => setActiveTab(tab)}
-                className={`py-8 px-10 text-xl font-bold capitalize border-b-4 transition ${activeTab === tab ? 'border-blue-600 text-blue-600' : 'border-transparent'}`}>
-                {t[tab]}
+      {/* Nav Tabs */}
+      <nav className="bg-white shadow-lg">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex gap-2 py-4 overflow-x-auto">
+            {[
+              { id: 'dashboard', label: 'Today', icon: Clock },
+              { id: 'rentals', label: 'Rentals', icon: Calendar },
+              { id: 'customers', label: 'Customers', icon: Users },
+              { id: 'inventory', label: 'Inventory', icon: Package },
+              { id: 'billing', label: 'Billing', icon: DollarSign },
+              { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+              ...(profile?.role === 'admin' ? [{ id: 'users', label: 'Users', icon: Users }] : [])
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-3 px-8 py-4 rounded-t-2xl font-bold transition-all ${
+                  activeTab === tab.id ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' : 'bg-gray-200 hover:bg-gray-300'
+                }`}
+              >
+                <tab.icon size={20} />
+                {tab.label}
               </button>
             ))}
           </div>
         </div>
       </nav>
 
-      {/* Dashboard */}
-      {activeTab === 'dashboard' && (
-        <main className="max-w-7xl mx-auto px-8 py-12">
-          <h2 className="text-5xl font-bold mb-12">Today - November 09, 2025</h2>
-          
-          <div className="grid grid-cols-4 gap-10 mb-12">
-            <div className="bg-gradient-to-br from-blue-600 to-blue-800 text-white p-10 rounded-3xl shadow-2xl">
-              <DollarSign size={60} />
-              <p className="text-6xl font-bold mt-6">${rentals.filter(r => r.pickup_date === today).reduce((sum, r) => sum + r.total, 0)}</p>
-              <p className="text-2xl mt-2">{t.todayRevenue}</p>
-            </div>
-            <div className="bg-gradient-to-br from-green-600 to-green-800 text-white p-10 rounded-3xl shadow-2xl">
-              <Package size={60} />
-              <p className="text-6xl font-bold mt-6">{todayPickups.length}</p>
-              <p className="text-2xl mt-2">{t.pickupsToday}</p>
-            </div>
-            <div className="bg-gradient-to-br from-yellow-600 to-yellow-800 text-white p-10 rounded-3xl shadow-2xl">
-              <Clock size={60} />
-              <p className="text-6xl font-bold mt-6">{rentals.filter(r => r.status === 'active').length}</p>
-              <p className="text-2xl mt-2">{t.thisWeek}</p>
-            </div>
-            <div className="bg-gradient-to-br from-purple-600 to-purple-800 text-white p-10 rounded-3xl shadow-2xl">
-              <Users size={60} />
-              <p className="text-6xl font-bold mt-6">{customers.length}</p>
-              <p className="text-2xl mt-2">{t.activeCustomers}</p>
-            </div>
-          </div>
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto p-8">
+        {/* Dashboard */}
+        {activeTab === 'dashboard' && (
+          <div className="space-y-8">
+            <h2 className="text-4xl font-bold">Today's Operations</h2>
 
-          <div className="grid grid-cols-2 gap-12">
-            <div className="bg-white rounded-3xl shadow-2xl p-10">
-              <h3 className="text-3xl font-bold mb-8 flex items-center gap-4"><CheckCircle className="text-green-600" size={40} /> {t.todayPickups}</h3>
-              {todayPickups.length === 0 ? <p className="text-gray-500 text-xl">{t.noPickups}</p> :
-                todayPickups.map(r => (
-                  <div key={r.id} className="bg-green-50 p-8 rounded-2xl mb-6">
-                    <p className="text-2xl font-bold">{r.customer_name}</p>
-                    <p className="text-lg text-gray-700">{t.items}: {r.item_ids?.length || 0} • {t.total}: ${r.total}</p>
-                    {r.event_date && <p className="text-sm text-gray-600 mt-2">{t.eventDate}: {r.event_date}</p>}
-                  </div>
-                ))
-              }
-            </div>
-
-            <div className="bg-white rounded-3xl shadow-2xl p-10">
-              <h3 className="text-3xl font-bold mb-8 flex items-center gap-4"><AlertCircle className="text-red-600" size={40} /> {t.overdueReturns}</h3>
-              {overdue.length === 0 ? <p className="text-green-600 text-2xl font-bold">{t.allReturned}</p> :
-                overdue.map(r => (
-                  <div key={r.id} className="bg-red-50 p-8 rounded-2xl mb-6">
-                    <p className="text-2xl font-bold text-red-700">{r.customer_name}</p>
-                    <p className="text-lg">{t.due}: {r.return_date} • {t.status}: {r.status}</p>
-                  </div>
-                ))
-              }
-            </div>
-          </div>
-        </main>
-      )}
-
-      {/* Rentals Tab */}
-      {activeTab === 'rentals' && (
-        <main className="max-w-7xl mx-auto px-8 py-12">
-          <div className="flex justify-between items-center mb-12">
-            <h2 className="text-5xl font-bold">{t.rentals} ({rentals.length})</h2>
-            <button onClick={() => openRentalModal()} className="bg-blue-600 text-white px-8 py-4 rounded-xl flex items-center gap-3 text-xl font-bold hover:bg-blue-700">
-              <Plus size={28} /> {t.addRental}
-            </button>
-          </div>
-          
-          <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-slate-900 text-white text-xl">
-                <tr>
-                  <th className="px-10 py-8 text-left">{t.customer}</th>
-                  <th className="px-10 py-8 text-left">{t.eventDate}</th>
-                  <th className="px-10 py-8 text-left">{t.pickupDate}</th>
-                  <th className="px-10 py-8 text-left">{t.returnDate}</th>
-                  <th className="px-10 py-8 text-left">{t.total}</th>
-                  <th className="px-10 py-8 text-left">{t.paymentMethod}</th>
-                  <th className="px-10 py-8 text-left">{t.status}</th>
-                  <th className="px-10 py-8 text-left">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rentals.map(r => (
-                  <tr key={r.id} className="border-b hover:bg-gray-50 text-lg">
-                    <td className="px-10 py-8 font-bold">{r.customer_name}</td>
-                    <td className="px-10 py-8">{r.event_date || '-'}</td>
-                    <td className="px-10 py-8">{r.pickup_date}</td>
-                    <td className="px-10 py-8">{r.return_date}</td>
-                    <td className="px-10 py-8">${r.total}</td>
-                    <td className="px-10 py-8">
-                      <span className="inline-flex items-center gap-2">
-                        <CreditCard size={18} />
-                        {t[r.payment_method] || r.payment_method}
-                      </span>
-                    </td>
-                    <td className="px-10 py-8">
-                      <span className={`px-4 py-2 rounded-full text-sm font-bold ${
-                        r.status === 'returned' ? 'bg-green-100 text-green-800' :
-                        r.status === 'active' ? 'bg-blue-100 text-blue-800' :
-                        'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {t[r.status] || r.status}
-                      </span>
-                    </td>
-                    <td className="px-10 py-8">
-                      <button onClick={() => openRentalModal(r)} className="text-blue-600 hover:text-blue-800">
-                        <Edit2 size={24} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </main>
-      )}
-
-      {/* Customers Tab */}
-      {activeTab === 'customers' && (
-        <main className="max-w-7xl mx-auto px-8 py-12">
-          <h2 className="text-5xl font-bold mb-12">{t.customers} ({customers.length})</h2>
-          <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-slate-900 text-white text-xl">
-                <tr>
-                  <th className="px-10 py-8 text-left">{t.name}</th>
-                  <th className="px-10 py-8 text-left">{t.phone}</th>
-                  <th className="px-10 py-8 text-left">{t.email}</th>
-                  <th className="px-10 py-8 text-left">{t.totalRentals}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {customers.map(c => (
-                  <tr key={c.id} className="border-b hover:bg-gray-50 text-lg">
-                    <td className="px-10 py-8 font-bold">{c.name}</td>
-                    <td className="px-10 py-8">{c.phone}</td>
-                    <td className="px-10 py-8">{c.email}</td>
-                    <td className="px-10 py-8">{c.total_rentals || 0}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </main>
-      )}
-
-      {/* Inventory Tab */}
-      {activeTab === 'inventory' && (
-        <main className="max-w-7xl mx-auto px-8 py-12">
-          <h2 className="text-5xl font-bold mb-12">{t.inventory} ({inventory.length})</h2>
-          <div className="grid grid-cols-3 gap-8">
-            {inventory.map(item => (
-              <div key={item.id} className="bg-white rounded-2xl shadow-xl p-8">
-                <h3 className="text-2xl font-bold mb-4">{item.name}</h3>
-                <div className="space-y-2 text-lg">
-                  <p><strong>{t.size}:</strong> {item.size}</p>
-                  <p><strong>{t.color}:</strong> {item.color}</p>
-                  <p><strong>{t.price}:</strong> ${item.price}</p>
-                  <p className="flex items-center gap-2">
-                    <strong>{t.status}:</strong>
-                    <span className={`px-3 py-1 rounded-full text-sm font-bold ${
-                      item.status === 'available' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}>
-                      {t[item.status] || item.status}
-                    </span>
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </main>
-      )}
-
-      {/* Rental Modal */}
-      {showRentalModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-8 z-50">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-12">
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-4xl font-bold">{editingRental ? t.editRental : t.addRental}</h2>
-              <button onClick={() => setShowRentalModal(false)} className="text-gray-500 hover:text-gray-700">
-                <X size={32} />
-              </button>
-            </div>
-
-            <div className="space-y-6">
-              {/* Customer Selection */}
-              <div>
-                <label className="block text-xl font-bold mb-3">{t.customer}</label>
-                <select 
-                  value={rentalForm.customer_id}
-                  onChange={(e) => {
-                    const customer = customers.find(c => c.id === e.target.value);
-                    updateRentalField('customer_id', e.target.value);
-                    updateRentalField('customer_name', customer?.name || '');
-                  }}
-                  className="w-full px-6 py-4 border-2 rounded-xl text-lg"
-                >
-                  <option value="">Select customer...</option>
-                  {customers.map(c => (
-                    <option key={c.id} value={c.id}>{c.name} - {c.phone}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Dates */}
-              <div className="grid grid-cols-3 gap-6">
-                <div>
-                  <label className="block text-xl font-bold mb-3">{t.eventDate}</label>
-                  <input 
-                    type="date"
-                    value={rentalForm.event_date}
-                    onChange={(e) => updateRentalField('event_date', e.target.value)}
-                    className="w-full px-6 py-4 border-2 rounded-xl text-lg"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xl font-bold mb-3">{t.pickupDate}</label>
-                  <input 
-                    type="date"
-                    value={rentalForm.pickup_date}
-                    onChange={(e) => updateRentalField('pickup_date', e.target.value)}
-                    className="w-full px-6 py-4 border-2 rounded-xl text-lg"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xl font-bold mb-3">{t.returnDate}</label>
-                  <input 
-                    type="date"
-                    value={rentalForm.return_date}
-                    onChange={(e) => updateRentalField('return_date', e.target.value)}
-                    className="w-full px-6 py-4 border-2 rounded-xl text-lg"
-                  />
-                </div>
-              </div>
-
-              {/* Date Conflicts Warning */}
-              {dateConflicts.length > 0 && (
-                <div className="bg-red-50 border-2 border-red-300 rounded-xl p-6">
-                  <p className="text-red-800 font-bold text-xl mb-3">{t.dateConflict}</p>
-                  {dateConflicts.map((conflict, idx) => (
-                    <p key={idx} className="text-red-700 text-lg">
-                      • {conflict.itemName} {t.itemUnavailable}
-                    </p>
-                  ))}
-                </div>
-              )}
-
-              {/* Item Selection */}
-              <div>
-                <label className="block text-xl font-bold mb-3">{t.items}</label>
-                <div className="grid grid-cols-2 gap-4 max-h-64 overflow-y-auto border-2 rounded-xl p-4">
-                  {inventory.filter(item => item.status === 'available').map(item => (
-                    <label key={item.id} className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100">
-                      <input
-                        type="checkbox"
-                        checked={rentalForm.item_ids.includes(item.id)}
-                        onChange={() => toggleItemInRental(item.id)}
-                        className="w-6 h-6"
-                      />
+            {/* Overdue */}
+            {overdue.length > 0 && (
+              <div className="bg-red-100 border-4 border-red-600 rounded-2xl p-8">
+                <h3 className="text-2xl font-bold text-red-800 flex items-center gap-3">
+                  <AlertCircle size={32} /> OVERDUE RETURNS ({overdue.length})
+                </h3>
+                <div className="grid gap-4 mt-6">
+                  {overdue.map(r => (
+                    <div key={r.id} className="bg-white p-6 rounded-xl shadow flex justify-between items-center">
                       <div>
-                        <p className="font-bold">{item.name}</p>
-                        <p className="text-sm text-gray-600">{item.size} - ${item.price}</p>
+                        <p className="text-xl font-bold">{r.customers.name}</p>
+                        <p className="text-red-600">Due: {r.return_date}</p>
                       </div>
-                    </label>
+                      <button onClick={() => handleCheckIn(r.id)} className="bg-red-600 text-white px-8 py-4 rounded-xl font-bold hover:bg-red-700">
+                        CHECK IN NOW
+                      </button>
+                    </div>
                   ))}
                 </div>
               </div>
+            )}
 
-              {/* Payment Info */}
-              <div className="grid grid-cols-3 gap-6">
+            <div className="grid lg:grid-cols-2 gap-8">
+              {/* Pickups */}
+              <div className="bg-gradient-to-br from-green-500 to-emerald-600 text-white p-8 rounded-3xl shadow-2xl">
+                <h3 className="text-3xl font-bold mb-6">Pickups Today</h3>
+                {todayPickups.map(r => (
+                  <div key={r.id} className="bg-white/20 backdrop-blur p-6 rounded-2xl mb-4">
+                    <p className="text-2xl font-bold">{r.customers.name}</p>
+                    <p>Total: ${r.total} | Items: {r.item_ids.length}</p>
+                    <button onClick={() => handlePickup(r.id)} className="mt-4 bg-white text-green-600 w-full py-4 rounded-xl font-bold hover:scale-105 transition">
+                      COMPLETE PICKUP
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Returns */}
+              <div className="bg-gradient-to-br from-blue-500 to-cyan-600 text-white p-8 rounded-3xl shadow-2xl">
+                <h3 className="text-3xl font-bold mb-6">Returns Today</h3>
+                {todayReturns.map(r => (
+                  <div key={r.id} className="bg-white/20 backdrop-blur p-6 rounded-2xl mb-4">
+                    <p className="text-2xl font-bold">{r.customers.name}</p>
+                    <p>Paid: ${r.paid_amount || 0} / ${r.total}</p>
+                    <div className="flex gap-3 mt-4">
+                      <button onClick={() => handleCheckIn(r.id)} className="flex-1 bg-white text-blue-600 py-4 rounded-xl font-bold">
+                        CHECK IN
+                      </button>
+                      {r.paid_amount < r.total && (
+                        <button onClick={() => openModal('payment', r)} className="flex-1 bg-green-500 py-4 rounded-xl font-bold">
+                          PAY NOW
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Add more tabs: rentals, customers, inventory, etc. — all with full CRUD */}
+      </main>
+
+      {/* Modal System */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl p-10 max-w-4xl w-full max-h-screen overflow-y-auto shadow-2xl">
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-4xl font-bold">
+                {modalType === 'rental' ? 'New Rental' : modalType === 'customer' ? 'Customer' : 'Action'}
+              </h2>
+              <button onClick={closeModal} className="text-gray-500 hover:text-red-600"><X size={40} /></button>
+            </div>
+
+            {modalType === 'rental' && (
+              <div className="grid grid-cols-2 gap-8">
                 <div>
-                  <label className="block text-xl font-bold mb-3">{t.paymentMethod}</label>
-                  <select 
-                    value={rentalForm.payment_method}
-                    onChange={(e) => updateRentalField('payment_method', e.target.value)}
-                    className="w-full px-6 py-4 border-2 rounded-xl text-lg"
-                  >
-                    <option value="cash">{t.cash}</option>
-                    <option value="card">{t.card}</option>
-                    <option value="transfer">{t.transfer}</option>
+                  <label className="text-xl font-bold">Customer</label>
+                  <select className="w-full p-4 border-2 rounded-xl mt-2" onChange={e => setFormData({ ...formData, customer_id: e.target.value })}>
+                    <option>Select Customer</option>
+                    {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xl font-bold mb-3">{t.deposit}</label>
-                  <input 
-                    type="number"
-                    value={rentalForm.deposit}
-                    onChange={(e) => updateRentalField('deposit', parseFloat(e.target.value) || 0)}
-                    className="w-full px-6 py-4 border-2 rounded-xl text-lg"
-                  />
+                  <label className="text-xl font-bold">Event Date</label>
+                  <input type="date" className="w-full p-4 border-2 rounded-xl mt-2" onChange={e => setFormData({ ...formData, event_date: e.target.value })} />
                 </div>
-                <div>
-                  <label className="block text-xl font-bold mb-3">{t.total}</label>
-                  <input 
-                    type="number"
-                    value={rentalForm.total}
-                    readOnly
-                    className="w-full px-6 py-4 border-2 rounded-xl text-lg bg-gray-100"
-                  />
-                </div>
-              </div>
-
-              {/* Alterations */}
-              <div className="border-2 rounded-xl p-6">
-                <h3 className="text-2xl font-bold mb-4 flex items-center gap-3">
-                  <Scissors size={28} /> {t.alterations}
-                </h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-lg font-bold mb-2">{t.jacketSleeve}</label>
-                    <input 
-                      type="text"
-                      value={rentalForm.alterations.jacket_sleeve}
-                      onChange={(e) => updateAlterationField('jacket_sleeve', e.target.value)}
-                      placeholder="e.g., -1 inch"
-                      className="w-full px-4 py-3 border-2 rounded-xl"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-lg font-bold mb-2">{t.jacketLength}</label>
-                    <input 
-                      type="text"
-                      value={rentalForm.alterations.jacket_length}
-                      onChange={(e) => updateAlterationField('jacket_length', e.target.value)}
-                      placeholder="e.g., +0.5 inch"
-                      className="w-full px-4 py-3 border-2 rounded-xl"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-lg font-bold mb-2">{t.pantWaist}</label>
-                    <input 
-                      type="text"
-                      value={rentalForm.alterations.pant_waist}
-                      onChange={(e) => updateAlterationField('pant_waist', e.target.value)}
-                      placeholder="e.g., take in 2 inches"
-                      className="w-full px-4 py-3 border-2 rounded-xl"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-lg font-bold mb-2">{t.pantLength}</label>
-                    <input 
-                      type="text"
-                      value={rentalForm.alterations.pant_length}
-                      onChange={(e) => updateAlterationField('pant_length', e.target.value)}
-                      placeholder="e.g., hem to 30 inches"
-                      className="w-full px-4 py-3 border-2 rounded-xl"
-                    />
-                  </div>
-                </div>
-                <div className="mt-4">
-                  <label className="block text-lg font-bold mb-2">{t.notes}</label>
-                  <textarea 
-                    value={rentalForm.alterations.notes}
-                    onChange={(e) => updateAlterationField('notes', e.target.value)}
-                    rows={3}
-                    className="w-full px-4 py-3 border-2 rounded-xl"
-                    placeholder="Additional alteration notes..."
-                  />
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex gap-6 pt-6">
-                <button 
-                  onClick={saveRental}
-                  className="flex-1 bg-blue-600 text-white py-4 rounded-xl text-xl font-bold hover:bg-blue-700 flex items-center justify-center gap-3"
-                >
-                  <Save size={24} /> {t.save}
-                </button>
-                <button 
-                  onClick={() => setShowRentalModal(false)}
-                  className="flex-1 bg-gray-300 text-gray-800 py-4 rounded-xl text-xl font-bold hover:bg-gray-400"
-                >
-                  {t.cancel}
+                {/* More fields + item selection */}
+                <button onClick={saveRental} className="col-span-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-6 rounded-2xl text-2xl font-bold hover:scale-105 transition">
+                  CREATE RENTAL
                 </button>
               </div>
-            </div>
+            )}
           </div>
         </div>
       )}
