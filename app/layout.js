@@ -1,4 +1,3 @@
-// app/layout.js
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
@@ -7,9 +6,8 @@ export default function RootLayout({ children }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Tuxedo Rental Admin</title>
         <script src="https://cdn.tailwindcss.com"></script>
-        <link rel="icon" href="/favicon.ico" />
       </head>
-      <body className="antialiased">
+      <body className="antialiased bg-gray-100">
         {children}
       </body>
     </html>
