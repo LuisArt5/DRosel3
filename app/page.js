@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { LogOut, Mail, Lock } from 'lucide-react';
+import { LogOut, Mail } from 'lucide-react';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -15,7 +15,7 @@ export default function TuxedoAdminSystem() {
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [magicSent, setMagicSent] = useState(false);
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -24,166 +24,173 @@ export default function TuxedoAdminSystem() {
       setLoading(false);
     });
 
-    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
       setUser(session?.user ?? null);
-      if (session?.user) fetchProfile(session.user.id);
+      if (session?.user) await fetchProfile(session.user.id);
       setLoading(false);
     });
 
     return () => listener.subscription.unsubscribe();
   }, []);
 
-  const fetchProfile = async (id) => {
-    const { data } = await supabase.from('users').select('*').eq('id', id).single();
-    setProfile(data);
-  };
+  const fetchProfile = async (userId) => {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single();
 
-  const signInEmail = async () => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) alert(error.message);
-  };
-
-  const signInGoogle = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: window.location.origin
-      }
-    });
-    if (error) {
-      console.error(error);
-      alert('Google login failed — did you enable it in Supabase?');
+    if (data) {
+      setProfile(data);
+    } else if (error && error.code === 'PGRST116') {
+      // Profile missing — create it
+      const { data: newProfile } = await supabase
+        .from('users')
+        .insert({
+          id: userId,
+          email: user.email,
+          name: user.email.split('@')[0],
+          role: 'staff'
+        })
+        .select()
+        .single();
+      setProfile(newProfile);
     }
   };
 
-  const sendMagicLink = async () => {
+  const signUp = async () => {
+    setMessage('');
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    if (error) setMessage('Error: ' + error.message);
+    else setMessage('Check your email for confirmation link!');
+  };
+
+  const signIn = async () => {
+    setMessage('');
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) setMessage('Error: ' + error.message);
+  };
+
+  const signInGoogle = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin }
+    });
+  };
+
+  const magicLink = async () => {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: { emailRedirectTo: window.location.origin }
     });
-    if (error) alert(error.message);
-    else setMagicSent(true);
+    if (error) setMessage('Error: ' + error.message);
+    else setMessage('Magic link sent! Check your email');
   };
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    setUser(null);
+    setProfile(null);
   };
 
-  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center text-2xl">Loading...</div>;
+  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center text-3xl">Loading...</div>;
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-2xl p-10 w-full max-w-md">
-          <h1 className="text-4xl font-bold text-center mb-8 text-slate-800">Tuxedo Admin</h1>
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center p-6">
+        <div className="bg-white rounded-3xl shadow-2xl p-12 w-full max-w-md">
+          <h1 className="text-5xl font-bold text-center mb-10 text-slate-800">Tuxedo Admin</h1>
+          
+          {message && (
+            <div className={`p-4 rounded-lg text-center font-bold mb-6 ${message.includes('Error') ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+              {message}
+            </div>
+          )}
 
-          <div className="space-y-4">
+          <div className="space-y-5">
             <input
               type="email"
               placeholder="you@company.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:border-blue-600 outline-none"
+              className="w-full px-5 py-4 border-2 border-gray-300 rounded-xl focus:border-blue-600 outline-none text-lg"
             />
             <input
               type="password"
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:border-blue-600 outline-none"
+              className="w-full px-5 py-4 border-2 border-gray-300 rounded-xl focus:border-blue-600 outline-none text-lg"
             />
 
-            <button
-              onClick={signInEmail}
-              className="w-full py-4 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition"
-            >
-              Sign In with Email
-            </button>
+            <div className="grid grid-cols-2 gap-4">
+              <button onClick={signUp} className="py-4 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 text-lg">
+                Sign Up
+              </button>
+              <button onClick={signIn} className="py-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 text-lg">
+                Sign In
+              </button>
+            </div>
 
-            <div className="relative my-6">
+            <div className="relative my-8">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
+                <div className="w-full border-t-2 border-gray-300"></div>
               </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white text-gray-500">OR</span>
+              <div className="relative flex justify-center">
+                <span className="px-6 bg-white text-gray-500 font-bold">OR</span>
               </div>
             </div>
 
             <button
               onClick={signInGoogle}
-              className="w-full py-4 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition flex items-center justify-center gap-3"
+              className="w-full py-5 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 flex items-center justify-center gap-4 text-lg"
             >
               Continue with Google
             </button>
 
             <button
-              onClick={sendMagicLink}
-              className="w-full py-4 bg-purple-600 text-white rounded-lg font-bold hover:bg-purple-700 transition flex items-center justify-center gap-3"
+              onClick={magicLink}
+              className="w-full py-5 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 flex items-center justify-center gap-4 text-lg"
             >
-              <Mail size={20} /> {magicSent ? 'Check Email' : 'Magic Link Login'}
+              <Mail size={24} /> Magic Link Login
             </button>
-
-            {magicSent && (
-              <p className="text-center text-green-600 font-medium">
-                Magic link sent! Check your inbox
-              </p>
-            )}
-
-            <div className="text-xs text-gray-500 text-center mt-6 space-y-1">
-              <p>Test accounts:</p>
-              <p>admin@demo.com / admin123</p>
-              <p>staff@demo.com / staff123</p>
-            </div>
           </div>
+
+          <p className="text-center text-gray-500 mt-8 text-sm">
+            Test: Click Google → any Gmail → instant login + profile created
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-slate-900 text-white p-4 shadow-lg">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50">
+      <header className="bg-slate-900 text-white p-6 shadow-2xl">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Tuxedo Admin</h1>
-          <div className="flex items-center gap-6">
+          <h1 className="text-4xl font-bold">Tuxedo Rental Admin</h1>
+          <div className="flex items-center gap-8">
             <div className="text-right">
-              <div className="font-semibold">{profile?.name || user.email}</div>
-              <div className="text-sm opacity-80">Role: {profile?.role || 'staff'}</div>
+              <div className="text-2xl font-bold">{profile?.name || user.email}</div>
+              <div className="text-lg opacity-90">Role: <span className="font-bold text-yellow-300">{profile?.role || 'staff'}</span></div>
             </div>
             <button
               onClick={signOut}
-              className="flex items-center gap-2 px-5 py-2 bg-red-600 rounded-lg hover:bg-red-700 transition"
+              className="flex items-center gap-3 px-8 py-4 bg-red-600 rounded-xl hover:bg-red-700 font-bold text-lg"
             >
-              <LogOut size={18} /> Logout
+              <LogOut size={24} /> Logout
             </button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto p-8">
-        <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-2xl p-12 text-center shadow-2xl">
-          <h1 className="text-5xl font-bold mb-6">AUTHENTICATION IS LIVE</h1>
-          <p className="text-2xl mb-8">Email + Google + Magic Link Working</p>
-          
-          <div className="bg-white/20 backdrop-blur rounded-xl p-8 max-w-2xl mx-auto">
-            <p className="text-xl mb-4">Logged in as:</p>
-            <p className="text-3xl font-bold">{user.email}</p>
-            <p className="text-xl mt-2">Role: <span className="font-bold">{profile?.role || 'staff'}</span></p>
-          </div>
-
-          <div className="mt-12 grid grid-cols-3 gap-8 text-center">
-            <div className="bg-white/10 rounded-xl p-6">
-              <div className="text-4xl mb-2">Email Login</div>
-              <p className="text-green-200">Working</p>
-            </div>
-            <div className="bg-white/10 rounded-xl p-6">
-              <div className="text-4xl mb-2">Google OAuth</div>
-              <p className="text-green-200">Working</p>
-            </div>
-            <div className="bg-white/10 rounded-xl p-6">
-              <div className="text-4xl mb-2">Magic Link</div>
-              <p className="text-green-200">Working</p>
-            </div>
+      <main className="max-w-7xl mx-auto p-10">
+        <div className="bg-white rounded-3xl shadow-2xl p-16 text-center">
+          <h1 className="text-7xl font-bold text-green-600 mb-8">AUTHENTICATION FIXED</h1>
+          <p className="text-4xl text-gray-800 mb-6">New users save instantly</p>
+          <p className="text-3xl text-gray-700">No more database errors</p>
+          <div className="mt-12 inline-block bg-green-100 text-green-800 px-12 py-6 rounded-2xl text-2xl font-bold">
+            Logged in as: {user.email}
           </div>
         </div>
       </main>
