@@ -2,17 +2,127 @@
 
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Calendar, Users, Package, DollarSign, BarChart3, Search, Plus, X, LogOut, Clock, AlertCircle, CheckCircle, Edit2, Upload, Eye, Printer, Trash2, CreditCard } from 'lucide-react';
+import { 
+  Calendar, Users, Package, DollarSign, BarChart3, Search, Plus, X, 
+  LogOut, Clock, AlertCircle, CheckCircle, Edit2, Upload, Eye, 
+  Printer, Trash2, CreditCard, Save, Ruler, Globe
+} from 'lucide-react';
 
-// === SUPABASE SETUP (SAFE) ===
+// Supabase setup
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in Vercel Settings!');
+  throw new Error('Missing Supabase environment variables!');
 }
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+// Language translations
+const translations = {
+  en: {
+    login: 'LOGIN',
+    logout: 'LOGOUT',
+    dashboard: 'Today',
+    rentals: 'Rentals',
+    customers: 'Customers',
+    inventory: 'Inventory',
+    billing: 'Billing',
+    analytics: 'Analytics',
+    users: 'Users',
+    addCustomer: 'ADD CUSTOMER',
+    addItem: 'ADD ITEM',
+    newRental: 'NEW RENTAL',
+    overdueReturns: 'OVERDUE RETURNS',
+    todayPickups: 'TODAY\'S PICKUPS',
+    todayReturns: 'TODAY\'S RETURNS',
+    checkInNow: 'CHECK IN NOW',
+    markPickedUp: 'MARK PICKED UP',
+    name: 'Name',
+    phone: 'Phone',
+    email: 'Email',
+    idPhoto: 'ID Photo',
+    actions: 'Actions',
+    viewId: 'View ID',
+    save: 'SAVE',
+    cancel: 'CANCEL',
+    edit: 'Edit',
+    delete: 'Delete',
+    status: 'Status',
+    customer: 'Customer',
+    items: 'Items',
+    total: 'Total',
+    deposit: 'Deposit',
+    balance: 'Balance',
+    reservationDate: 'Reservation Date',
+    pickupDate: 'Pickup Date',
+    returnDate: 'Return Date',
+    eventDate: 'Event Date',
+    paymentMethod: 'Payment Method',
+    alterations: 'Alterations',
+    notes: 'Notes',
+    addAlteration: 'Add Alteration',
+    cash: 'Cash',
+    card: 'Card',
+    check: 'Check',
+    other: 'Other',
+    available: 'Available',
+    rented: 'Rented',
+    cleaning: 'Cleaning',
+    maintenance: 'Maintenance',
+  },
+  es: {
+    login: 'INICIAR SESIÓN',
+    logout: 'CERRAR SESIÓN',
+    dashboard: 'Hoy',
+    rentals: 'Alquileres',
+    customers: 'Clientes',
+    inventory: 'Inventario',
+    billing: 'Facturación',
+    analytics: 'Análisis',
+    users: 'Usuarios',
+    addCustomer: 'AGREGAR CLIENTE',
+    addItem: 'AGREGAR ARTÍCULO',
+    newRental: 'NUEVO ALQUILER',
+    overdueReturns: 'DEVOLUCIONES VENCIDAS',
+    todayPickups: 'RECOLECCIONES DE HOY',
+    todayReturns: 'DEVOLUCIONES DE HOY',
+    checkInNow: 'REGISTRAR AHORA',
+    markPickedUp: 'MARCAR RECOGIDO',
+    name: 'Nombre',
+    phone: 'Teléfono',
+    email: 'Correo',
+    idPhoto: 'Foto de ID',
+    actions: 'Acciones',
+    viewId: 'Ver ID',
+    save: 'GUARDAR',
+    cancel: 'CANCELAR',
+    edit: 'Editar',
+    delete: 'Eliminar',
+    status: 'Estado',
+    customer: 'Cliente',
+    items: 'Artículos',
+    total: 'Total',
+    deposit: 'Depósito',
+    balance: 'Saldo',
+    reservationDate: 'Fecha de Reserva',
+    pickupDate: 'Fecha de Recolección',
+    returnDate: 'Fecha de Devolución',
+    eventDate: 'Fecha del Evento',
+    paymentMethod: 'Método de Pago',
+    alterations: 'Alteraciones',
+    notes: 'Notas',
+    addAlteration: 'Agregar Alteración',
+    cash: 'Efectivo',
+    card: 'Tarjeta',
+    check: 'Cheque',
+    other: 'Otro',
+    available: 'Disponible',
+    rented: 'Alquilado',
+    cleaning: 'Limpieza',
+    maintenance: 'Mantenimiento',
+  }
+};
 
 export default function TuxedoAdmin() {
   const [user, setUser] = useState(null);
@@ -27,44 +137,68 @@ export default function TuxedoAdmin() {
   const [modalType, setModalType] = useState('');
   const [formData, setFormData] = useState({});
   const [selectedItems, setSelectedItems] = useState([]);
+  const [language, setLanguage] = useState('en');
+  const [loginData, setLoginData] = useState({ email: '', password: '' });
+  const [error, setError] = useState('');
+  const [alterations, setAlterations] = useState([]);
+  const [payments, setPayments] = useState([]);
 
+  const t = translations[language];
   const today = new Date().toISOString().split('T')[0];
 
   useEffect(() => {
-    const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user) await loadData();
-      setLoading(false);
-    });
-
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) {
-        setUser(data.session.user);
-        loadData();
-      }
-      setLoading(false);
-    });
-
-    return () => listener?.subscription.unsubscribe();
+    checkUser();
   }, []);
 
-  const loadData = async () => {
-    const { data: profileData } = await supabase
+  const checkUser = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      setUser(session.user);
+      await loadUserProfile(session.user.id);
+      await loadData();
+    }
+    setLoading(false);
+  };
+
+  const loadUserProfile = async (userId) => {
+    const { data } = await supabase
       .from('profiles')
       .select('*')
-      .eq('id', supabase.auth.user()?.id)
+      .eq('id', userId)
       .single();
-    setProfile(profileData || { role: 'viewer' });
+    setProfile(data || { role: 'viewer' });
+  };
 
-    const [c, i, r] = await Promise.all([
-      supabase.from('customers').select('*'),
-      supabase.from('inventory').select('*'),
-      supabase.from('rentals').select('*, customers(name, phone, email)').order('created_at', { ascending: false })
+  const loadData = async () => {
+    const [c, i, r, a, p] = await Promise.all([
+      supabase.from('customers').select('*').order('name'),
+      supabase.from('inventory').select('*').order('name'),
+      supabase.from('rentals').select(`
+        *,
+        customers(name, phone, email)
+      `).order('created_at', { ascending: false }),
+      supabase.from('alterations').select('*'),
+      supabase.from('payments').select('*')
     ]);
 
     setCustomers(c.data || []);
     setInventory(i.data || []);
     setRentals(r.data || []);
+    setAlterations(a.data || []);
+    setPayments(p.data || []);
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError('');
+    const { data, error } = await supabase.auth.signInWithPassword(loginData);
+    if (error) {
+      setError(error.message);
+    } else {
+      setUser(data.user);
+      await loadUserProfile(data.user.id);
+      await loadData();
+    }
   };
 
   const signOut = async () => {
@@ -85,6 +219,9 @@ export default function TuxedoAdmin() {
     setModalType(type);
     setFormData(data);
     setShowModal(true);
+    if (type === 'rental' && data.id) {
+      setSelectedItems(data.item_ids || []);
+    }
   };
 
   const closeModal = () => {
@@ -102,56 +239,156 @@ export default function TuxedoAdmin() {
     return data.publicUrl;
   };
 
-  const saveCustomer = async () => {
-    let id_photo_url = formData.id_photo_url;
-    if (formData.idPhotoFile) {
-      id_photo_url = await handleFileUpload(formData.idPhotoFile);
-    }
-    const data = { ...formData, id_photo_url };
-    delete data.idPhotoFile;
+  const checkDateConflicts = async (itemIds, pickupDate, returnDate, rentalId = null) => {
+    const { data } = await supabase
+      .from('rentals')
+      .select('id, item_ids, pickup_date, return_date')
+      .in('status', ['reserved', 'picked_up'])
+      .neq('id', rentalId || '');
 
-    if (formData.id) {
-      await supabase.from('customers').update(data).eq('id', formData.id);
-    } else {
-      await supabase.from('customers').insert(data);
+    const conflicts = [];
+    data?.forEach(rental => {
+      const hasItemConflict = rental.item_ids.some(id => itemIds.includes(id));
+      if (!hasItemConflict) return;
+
+      const rentalStart = new Date(rental.pickup_date);
+      const rentalEnd = new Date(rental.return_date);
+      const newStart = new Date(pickupDate);
+      const newEnd = new Date(returnDate);
+
+      if (newStart <= rentalEnd && newEnd >= rentalStart) {
+        conflicts.push(rental);
+      }
+    });
+
+    return conflicts;
+  };
+
+  const saveCustomer = async () => {
+    try {
+      let id_photo_url = formData.id_photo_url;
+      if (formData.idPhotoFile) {
+        id_photo_url = await handleFileUpload(formData.idPhotoFile);
+      }
+      const data = { ...formData, id_photo_url };
+      delete data.idPhotoFile;
+      delete data.id;
+
+      if (formData.id) {
+        await supabase.from('customers').update(data).eq('id', formData.id);
+      } else {
+        await supabase.from('customers').insert(data);
+      }
+      await loadData();
+      closeModal();
+    } catch (error) {
+      alert('Error saving customer: ' + error.message);
     }
-    loadData();
-    closeModal();
   };
 
   const saveInventory = async () => {
-    const data = { ...formData };
-    if (!data.id) data.status = 'available';
-    if (data.id) {
-      await supabase.from('inventory').update(data).eq('id', data.id);
-    } else {
-      await supabase.from('inventory').insert(data);
+    try {
+      const data = { ...formData };
+      if (!data.id) data.status = 'available';
+      delete data.id;
+
+      if (formData.id) {
+        await supabase.from('inventory').update(data).eq('id', formData.id);
+      } else {
+        await supabase.from('inventory').insert(data);
+      }
+      await loadData();
+      closeModal();
+    } catch (error) {
+      alert('Error saving inventory: ' + error.message);
     }
-    loadData();
-    closeModal();
   };
 
   const saveRental = async () => {
-    const total = selectedItems.reduce((sum, id) => {
-      const item = inventory.find(i => i.id === id);
-      return sum + (item?.price || 0);
-    }, 0);
+    try {
+      // Check for date conflicts
+      const conflicts = await checkDateConflicts(
+        selectedItems,
+        formData.pickup_date,
+        formData.return_date,
+        formData.id
+      );
 
-    await supabase.from('rentals').insert({
-      customer_id: formData.customer_id,
-      item_ids: selectedItems,
-      total,
-      deposit: parseFloat(formData.deposit) || 0,
-      paid_amount: parseFloat(formData.deposit) || 0,
-      status: 'reserved',
-      reservation_date: today,
-      pickup_date: formData.pickup_date,
-      return_date: formData.return_date,
-      event_date: formData.event_date || null,
-      created_by: user.id
-    });
-    loadData();
-    closeModal();
+      if (conflicts.length > 0) {
+        if (!confirm(`Warning: ${conflicts.length} item(s) have conflicting reservations. Continue anyway?`)) {
+          return;
+        }
+      }
+
+      const total = selectedItems.reduce((sum, id) => {
+        const item = inventory.find(i => i.id === id);
+        return sum + (item?.price || 0);
+      }, 0);
+
+      const rentalData = {
+        customer_id: formData.customer_id,
+        item_ids: selectedItems,
+        total,
+        deposit: parseFloat(formData.deposit) || 0,
+        paid_amount: parseFloat(formData.paid_amount) || parseFloat(formData.deposit) || 0,
+        status: formData.status || 'reserved',
+        reservation_date: formData.reservation_date || today,
+        pickup_date: formData.pickup_date,
+        return_date: formData.return_date,
+        event_date: formData.event_date || null,
+        payment_method: formData.payment_method || 'cash',
+        notes: formData.notes || '',
+        created_by: user.id
+      };
+
+      if (formData.id) {
+        await supabase.from('rentals').update(rentalData).eq('id', formData.id);
+      } else {
+        await supabase.from('rentals').insert(rentalData);
+      }
+
+      await loadData();
+      closeModal();
+    } catch (error) {
+      alert('Error saving rental: ' + error.message);
+    }
+  };
+
+  const saveAlteration = async () => {
+    try {
+      const data = {
+        rental_id: formData.rental_id,
+        description: formData.alteration_description,
+        cost: parseFloat(formData.alteration_cost) || 0,
+        status: formData.alteration_status || 'pending'
+      };
+
+      await supabase.from('alterations').insert(data);
+      await loadData();
+      setFormData({ ...formData, alteration_description: '', alteration_cost: '' });
+    } catch (error) {
+      alert('Error saving alteration: ' + error.message);
+    }
+  };
+
+  const addPayment = async (rentalId, amount, method) => {
+    try {
+      await supabase.from('payments').insert({
+        rental_id: rentalId,
+        amount: parseFloat(amount),
+        payment_method: method,
+        payment_date: today
+      });
+
+      // Update rental paid_amount
+      const rental = rentals.find(r => r.id === rentalId);
+      const newPaidAmount = (rental.paid_amount || 0) + parseFloat(amount);
+      await supabase.from('rentals').update({ paid_amount: newPaidAmount }).eq('id', rentalId);
+
+      await loadData();
+    } catch (error) {
+      alert('Error adding payment: ' + error.message);
+    }
   };
 
   const handlePickup = async (id) => {
@@ -160,38 +397,84 @@ export default function TuxedoAdmin() {
     for (const itemId of rental.item_ids) {
       await supabase.from('inventory').update({ status: 'rented' }).eq('id', itemId);
     }
-    loadData();
+    await loadData();
   };
 
   const handleCheckIn = async (id) => {
     const rental = rentals.find(r => r.id === id);
-    await supabase.from('rentals').update({ status: 'returned', actual_return_date: today }).eq('id', id);
+    await supabase.from('rentals').update({ 
+      status: 'returned', 
+      actual_return_date: today 
+    }).eq('id', id);
     for (const itemId of rental.item_ids) {
       await supabase.from('inventory').update({ status: 'cleaning' }).eq('id', itemId);
     }
-    loadData();
+    await loadData();
   };
 
   const deleteItem = async (table, id) => {
     if (window.confirm('Delete permanently?')) {
       await supabase.from(table).delete().eq('id', id);
-      loadData();
+      await loadData();
     }
   };
 
-  if (loading) return <div className="flex items-center justify-center h-screen text-6xl font-bold bg-gradient-to-br from-blue-600 to-purple-600 text-white">Loading...</div>;
-  if (!user) return (
-    <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-900 to-purple-900">
-      <div className="bg-white p-12 rounded-3xl shadow-2xl w-96 text-center">
-        <h1 className="text-5xl font-bold mb-8 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">TUXEDO ADMIN</h1>
-        <button onClick={() => supabase.auth.signInWithPassword({ email: 'admin@example.com', password: 'password' })}
-          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-6 rounded-2xl font-bold text-2xl hover:scale-105 transition">
-          LOGIN AS ADMIN
-        </button>
-        <p className="mt-4 text-sm text-gray-600">admin@example.com / password</p>
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen text-6xl font-bold bg-gradient-to-br from-blue-600 to-purple-600 text-white">
+        Loading...
       </div>
-    </div>
-  );
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-900 to-purple-900">
+        <div className="bg-white p-12 rounded-3xl shadow-2xl w-96">
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              TUXEDO ADMIN
+            </h1>
+            <button
+              onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
+              className="p-2 hover:bg-gray-100 rounded-full"
+            >
+              <Globe size={28} />
+            </button>
+          </div>
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
+              {error}
+            </div>
+          )}
+          <form onSubmit={handleLogin} className="space-y-6">
+            <input
+              type="email"
+              placeholder="Email"
+              value={loginData.email}
+              onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+              className="w-full px-6 py-4 border-2 rounded-xl text-xl"
+              required
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={loginData.password}
+              onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+              className="w-full px-6 py-4 border-2 rounded-xl text-xl"
+              required
+            />
+            <button
+              type="submit"
+              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-6 rounded-2xl font-bold text-2xl hover:scale-105 transition"
+            >
+              {t.login}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   const todayPickups = rentals.filter(r => r.pickup_date === today && r.status === 'reserved');
   const todayReturns = rentals.filter(r => r.return_date === today && r.status === 'picked_up');
@@ -208,6 +491,12 @@ export default function TuxedoAdmin() {
     i.rfid?.toLowerCase().includes(searchTerm)
   );
 
+  const getRentalBalance = (rental) => {
+    const rentalAlterations = alterations.filter(a => a.rental_id === rental.id);
+    const alterationsCost = rentalAlterations.reduce((sum, a) => sum + (a.cost || 0), 0);
+    return rental.total + alterationsCost - (rental.paid_amount || 0);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -215,11 +504,21 @@ export default function TuxedoAdmin() {
         <div className="max-w-7xl mx-auto px-8 py-6 flex justify-between items-center">
           <h1 className="text-5xl font-bold">Tuxedo Rental Admin</h1>
           <div className="flex items-center gap-8">
+            <button
+              onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
+              className="flex items-center gap-2 bg-white text-slate-900 px-6 py-3 rounded-full font-bold hover:bg-gray-100 transition"
+            >
+              <Globe size={24} />
+              {language === 'en' ? 'ES' : 'EN'}
+            </button>
             <span className="bg-gradient-to-r from-purple-600 to-pink-600 px-8 py-3 rounded-full font-bold text-xl">
               {profile?.role?.toUpperCase() || 'USER'}
             </span>
-            <button onClick={signOut} className="flex items-center gap-4 bg-red-600 px-8 py-4 rounded-2xl hover:bg-red-700 transition font-bold text-xl">
-              <LogOut size={28} /> LOGOUT
+            <button
+              onClick={signOut}
+              className="flex items-center gap-4 bg-red-600 px-8 py-4 rounded-2xl hover:bg-red-700 transition font-bold text-xl"
+            >
+              <LogOut size={28} /> {t.logout}
             </button>
           </div>
         </div>
@@ -230,13 +529,13 @@ export default function TuxedoAdmin() {
         <div className="max-w-7xl mx-auto px-8 py-6">
           <div className="flex gap-4 overflow-x-auto">
             {[
-              { id: 'dashboard', label: 'Today', icon: Clock },
-              { id: 'rentals', label: 'Rentals', icon: Calendar },
-              { id: 'customers', label: 'Customers', icon: Users },
-              { id: 'inventory', label: 'Inventory', icon: Package },
-              { id: 'billing', label: 'Billing', icon: DollarSign },
-              { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-              ...(profile?.role === 'admin' ? [{ id: 'users', label: 'Users', icon: Users }] : [])
+              { id: 'dashboard', label: t.dashboard, icon: Clock },
+              { id: 'rentals', label: t.rentals, icon: Calendar },
+              { id: 'customers', label: t.customers, icon: Users },
+              { id: 'inventory', label: t.inventory, icon: Package },
+              { id: 'billing', label: t.billing, icon: DollarSign },
+              { id: 'analytics', label: t.analytics, icon: BarChart3 },
+              ...(profile?.role === 'admin' ? [{ id: 'users', label: t.users, icon: Users }] : [])
             ].map(tab => {
               const Icon = tab.icon;
               return (
@@ -260,40 +559,92 @@ export default function TuxedoAdmin() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto p-10">
-        {/* Dashboard, Customers, Inventory, etc. — FULLY IMPLEMENTED BELOW */}
-        {/* This is a trimmed version for brevity — full UI matches your Figma 100% */}
+        {/* Dashboard */}
         {activeTab === 'dashboard' && (
           <div className="space-y-12">
             {overdue.length > 0 && (
               <div className="bg-red-100 border-4 border-red-600 rounded-3xl p-12">
                 <h2 className="text-5xl font-bold text-red-800 flex items-center gap-6 mb-8">
-                  <AlertCircle size={60} /> OVERDUE RETURNS ({overdue.length})
+                  <AlertCircle size={60} /> {t.overdueReturns} ({overdue.length})
                 </h2>
                 {overdue.map(r => (
                   <div key={r.id} className="bg-white p-8 rounded-3xl mb-6 shadow-2xl flex justify-between items-center">
                     <div>
                       <p className="text-4xl font-bold">{r.customers.name}</p>
                       <p className="text-2xl text-red-600">Due: {r.return_date}</p>
+                      <p className="text-xl text-gray-600">Event: {r.event_date || 'N/A'}</p>
                     </div>
-                    <button onClick={() => handleCheckIn(r.id)} className="bg-red-600 text-white px-16 py-8 rounded-3xl font-bold text-3xl hover:bg-red-700">
-                      CHECK IN NOW
+                    <button
+                      onClick={() => handleCheckIn(r.id)}
+                      className="bg-red-600 text-white px-16 py-8 rounded-3xl font-bold text-3xl hover:bg-red-700"
+                    >
+                      {t.checkInNow}
                     </button>
                   </div>
                 ))}
               </div>
             )}
-            {/* Pickups & Returns cards — full gradient design */}
+
+            {todayPickups.length > 0 && (
+              <div className="bg-blue-100 border-4 border-blue-600 rounded-3xl p-12">
+                <h2 className="text-5xl font-bold text-blue-800 flex items-center gap-6 mb-8">
+                  <Calendar size={60} /> {t.todayPickups} ({todayPickups.length})
+                </h2>
+                {todayPickups.map(r => (
+                  <div key={r.id} className="bg-white p-8 rounded-3xl mb-6 shadow-2xl flex justify-between items-center">
+                    <div>
+                      <p className="text-4xl font-bold">{r.customers.name}</p>
+                      <p className="text-2xl text-blue-600">Pickup: {r.pickup_date}</p>
+                      <p className="text-xl text-gray-600">Event: {r.event_date || 'N/A'}</p>
+                      <p className="text-lg text-gray-500">{r.item_ids.length} items</p>
+                    </div>
+                    <button
+                      onClick={() => handlePickup(r.id)}
+                      className="bg-blue-600 text-white px-16 py-8 rounded-3xl font-bold text-3xl hover:bg-blue-700"
+                    >
+                      {t.markPickedUp}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {todayReturns.length > 0 && (
+              <div className="bg-green-100 border-4 border-green-600 rounded-3xl p-12">
+                <h2 className="text-5xl font-bold text-green-800 flex items-center gap-6 mb-8">
+                  <CheckCircle size={60} /> {t.todayReturns} ({todayReturns.length})
+                </h2>
+                {todayReturns.map(r => (
+                  <div key={r.id} className="bg-white p-8 rounded-3xl mb-6 shadow-2xl flex justify-between items-center">
+                    <div>
+                      <p className="text-4xl font-bold">{r.customers.name}</p>
+                      <p className="text-2xl text-green-600">Return: {r.return_date}</p>
+                      <p className="text-xl text-gray-600">Event: {r.event_date || 'N/A'}</p>
+                    </div>
+                    <button
+                      onClick={() => handleCheckIn(r.id)}
+                      className="bg-green-600 text-white px-16 py-8 rounded-3xl font-bold text-3xl hover:bg-green-700"
+                    >
+                      {t.checkInNow}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
-        {/* Customers Tab */}
-        {activeTab === 'customers' && (
+        {/* Rentals Tab */}
+        {activeTab === 'rentals' && (
           <div>
             <div className="flex justify-between items-center mb-10">
-              <h2 className="text-5xl font-bold">Customers</h2>
+              <h2 className="text-5xl font-bold">{t.rentals}</h2>
               {hasPermission('edit') && (
-                <button onClick={() => openModal('customer')} className="flex items-center gap-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-12 py-6 rounded-3xl font-bold text-3xl hover:scale-105 transition">
-                  <Plus size={40} /> ADD CUSTOMER
+                <button
+                  onClick={() => openModal('rental')}
+                  className="flex items-center gap-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-12 py-6 rounded-3xl font-bold text-3xl hover:scale-105 transition"
+                >
+                  <Plus size={40} /> {t.newRental}
                 </button>
               )}
             </div>
@@ -301,11 +652,98 @@ export default function TuxedoAdmin() {
               <table className="w-full text-lg">
                 <thead className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
                   <tr>
-                    <th className="px-10 py-8 text-left font-bold">Name</th>
-                    <th className="px-10 py-8 text-left font-bold">Phone</th>
-                    <th className="px-10 py-8 text-left font-bold">Email</th>
-                    <th className="px-10 py-8 text-left font-bold">ID Photo</th>
-                    <th className="px-10 py-8 text-left font-bold">Actions</th>
+                    <th className="px-10 py-8 text-left font-bold">{t.customer}</th>
+                    <th className="px-10 py-8 text-left font-bold">{t.eventDate}</th>
+                    <th className="px-10 py-8 text-left font-bold">{t.pickupDate}</th>
+                    <th className="px-10 py-8 text-left font-bold">{t.returnDate}</th>
+                    <th className="px-10 py-8 text-left font-bold">{t.status}</th>
+                    <th className="px-10 py-8 text-left font-bold">{t.total}</th>
+                    <th className="px-10 py-8 text-left font-bold">{t.balance}</th>
+                    <th className="px-10 py-8 text-left font-bold">{t.actions}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rentals.map(r => {
+                    const balance = getRentalBalance(r);
+                    return (
+                      <tr key={r.id} className="border-b hover:bg-gray-50">
+                        <td className="px-10 py-8 font-bold">{r.customers.name}</td>
+                        <td className="px-10 py-8">{r.event_date || 'N/A'}</td>
+                        <td className="px-10 py-8">{r.pickup_date}</td>
+                        <td className="px-10 py-8">{r.return_date}</td>
+                        <td className="px-10 py-8">
+                          <span className={`px-4 py-2 rounded-full text-sm font-bold ${
+                            r.status === 'reserved' ? 'bg-yellow-200 text-yellow-800' :
+                            r.status === 'picked_up' ? 'bg-blue-200 text-blue-800' :
+                            r.status === 'returned' ? 'bg-green-200 text-green-800' :
+                            'bg-gray-200 text-gray-800'
+                          }`}>
+                            {r.status}
+                          </span>
+                        </td>
+                        <td className="px-10 py-8">${r.total.toFixed(2)}</td>
+                        <td className="px-10 py-8">
+                          <span className={balance > 0 ? 'text-red-600 font-bold' : 'text-green-600'}>
+                            ${balance.toFixed(2)}
+                          </span>
+                        </td>
+                        <td className="px-10 py-8 flex gap-2">
+                          <button
+                            onClick={() => openModal('rental', r)}
+                            className="text-blue-600 p-4 rounded-xl hover:bg-blue-100"
+                          >
+                            <Edit2 size={28} />
+                          </button>
+                          {hasPermission('delete') && (
+                            <button
+                              onClick={() => deleteItem('rentals', r.id)}
+                              className="text-red-600 p-4 rounded-xl hover:bg-red-100"
+                            >
+                              <Trash2 size={28} />
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Customers Tab */}
+        {activeTab === 'customers' && (
+          <div>
+            <div className="flex justify-between items-center mb-10">
+              <h2 className="text-5xl font-bold">{t.customers}</h2>
+              {hasPermission('edit') && (
+                <button
+                  onClick={() => openModal('customer')}
+                  className="flex items-center gap-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-12 py-6 rounded-3xl font-bold text-3xl hover:scale-105 transition"
+                >
+                  <Plus size={40} /> {t.addCustomer}
+                </button>
+              )}
+            </div>
+            <div className="mb-6">
+              <input
+                type="text"
+                placeholder={`${t.search}...`}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-8 py-6 border-4 rounded-3xl text-2xl"
+              />
+            </div>
+            <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
+              <table className="w-full text-lg">
+                <thead className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+                  <tr>
+                    <th className="px-10 py-8 text-left font-bold">{t.name}</th>
+                    <th className="px-10 py-8 text-left font-bold">{t.phone}</th>
+                    <th className="px-10 py-8 text-left font-bold">{t.email}</th>
+                    <th className="px-10 py-8 text-left font-bold">{t.idPhoto}</th>
+                    <th className="px-10 py-8 text-left font-bold">{t.actions}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -316,15 +754,29 @@ export default function TuxedoAdmin() {
                       <td className="px-10 py-8">{c.email}</td>
                       <td className="px-10 py-8">
                         {c.id_photo_url ? (
-                          <button onClick={() => window.open(c.id_photo_url)} className="text-blue-600 hover:underline flex items-center gap-3">
-                            <Eye size={28} /> View ID
+                          <button
+                            onClick={() => window.open(c.id_photo_url)}
+                            className="text-blue-600 hover:underline flex items-center gap-3"
+                          >
+                            <Eye size={28} /> {t.viewId}
                           </button>
                         ) : '—'}
                       </td>
-                      <td className="px-10 py-8">
-                        <button onClick={() => openModal('customer', c)} className="text-blue-600 p-4 rounded-xl hover:bg-blue-100">
+                      <td className="px-10 py-8 flex gap-2">
+                        <button
+                          onClick={() => openModal('customer', c)}
+                          className="text-blue-600 p-4 rounded-xl hover:bg-blue-100"
+                        >
                           <Edit2 size={28} />
                         </button>
+                        {hasPermission('delete') && (
+                          <button
+                            onClick={() => deleteItem('customers', c.id)}
+                            className="text-red-600 p-4 rounded-xl hover:bg-red-100"
+                          >
+                            <Trash2 size={28} />
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -334,25 +786,331 @@ export default function TuxedoAdmin() {
           </div>
         )}
 
-        {/* Add more tabs as needed — all work the same way */}
+        {/* Inventory Tab */}
+        {activeTab === 'inventory' && (
+          <div>
+            <div className="flex justify-between items-center mb-10">
+              <h2 className="text-5xl font-bold">{t.inventory}</h2>
+              {hasPermission('edit') && (
+                <button
+                  onClick={() => openModal('inventory')}
+                  className="flex items-center gap-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-12 py-6 rounded-3xl font-bold text-3xl hover:scale-105 transition"
+                >
+                  <Plus size={40} /> {t.addItem}
+                </button>
+              )}
+            </div>
+            <div className="mb-6">
+              <input
+                type="text"
+                placeholder={`${t.search}...`}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-8 py-6 border-4 rounded-3xl text-2xl"
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredInventory.map(item => (
+                <div key={item.id} className="bg-white rounded-3xl shadow-2xl p-8">
+                  <h3 className="text-3xl font-bold mb-4">{item.name}</h3>
+                  <p className="text-xl text-gray-600 mb-2">Size: {item.size}</p>
+                  <p className="text-xl text-gray-600 mb-2">RFID: {item.rfid || 'N/A'}</p>
+                  <p className="text-2xl font-bold mb-4">${item.price}</p>
+                  <span className={`px-4 py-2 rounded-full text-sm font-bold ${
+                    item.status === 'available' ? 'bg-green-200 text-green-800' :
+                    item.status === 'rented' ? 'bg-blue-200 text-blue-800' :
+                    item.status === 'cleaning' ? 'bg-yellow-200 text-yellow-800' :
+                    'bg-red-200 text-red-800'
+                  }`}>
+                    {t[item.status] || item.status}
+                  </span>
+                  <div className="flex gap-2 mt-6">
+                    <button
+                      onClick={() => openModal('inventory', item)}
+                      className="flex-1 bg-blue-600 text-white px-6 py-4 rounded-2xl font-bold hover:bg-blue-700"
+                    >
+                      {t.edit}
+                    </button>
+                    {hasPermission('delete') && (
+                      <button
+                        onClick={() => deleteItem('inventory', item.id)}
+                        className="bg-red-600 text-white px-6 py-4 rounded-2xl font-bold hover:bg-red-700"
+                      >
+                        <Trash2 size={24} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </main>
 
-      {/* MODAL — EXACT FIGMA DESIGN */}
+      {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-10">
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-10 overflow-y-auto">
           <div className="bg-white rounded-3xl p-16 max-w-4xl w-full max-h-screen overflow-y-auto shadow-3xl">
             <div className="flex justify-between items-center mb-12">
               <h2 className="text-6xl font-bold">
-                {modalType === 'customer' ? 'Add Customer' : modalType === 'inventory' ? 'Add Item' : 'New Rental'}
+                {modalType === 'customer' ? (formData.id ? `${t.edit} ${t.customer}` : t.addCustomer) :
+                 modalType === 'inventory' ? (formData.id ? `${t.edit} ${t.inventory}` : t.addItem) :
+                 formData.id ? `${t.edit} ${t.rentals}` : t.newRental}
               </h2>
               <button onClick={closeModal} className="text-gray-500 hover:text-red-600">
                 <X size={60} />
               </button>
             </div>
-            <form onSubmit={(e) => { e.preventDefault(); saveCustomer(); }} className="space-y-10">
-              {/* Your full form fields here — matching Figma exactly */}
-              <button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-8 rounded-3xl font-bold text-4xl hover:scale-105 transition">
-                SAVE
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (modalType === 'customer') saveCustomer();
+                else if (modalType === 'inventory') saveInventory();
+                else saveRental();
+              }}
+              className="space-y-10"
+            >
+              {modalType === 'customer' && (
+                <>
+                  <input
+                    type="text"
+                    placeholder={t.name}
+                    value={formData.name || ''}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full px-8 py-6 border-4 rounded-3xl text-2xl"
+                    required
+                  />
+                  <input
+                    type="tel"
+                    placeholder={t.phone}
+                    value={formData.phone || ''}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    className="w-full px-8 py-6 border-4 rounded-3xl text-2xl"
+                    required
+                  />
+                  <input
+                    type="email"
+                    placeholder={t.email}
+                    value={formData.email || ''}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="w-full px-8 py-6 border-4 rounded-3xl text-2xl"
+                  />
+                  <div>
+                    <label className="block text-2xl font-bold mb-4">{t.idPhoto}</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setFormData({ ...formData, idPhotoFile: e.target.files[0] })}
+                      className="w-full px-8 py-6 border-4 rounded-3xl text-2xl"
+                    />
+                  </div>
+                </>
+              )}
+
+              {modalType === 'inventory' && (
+                <>
+                  <input
+                    type="text"
+                    placeholder={t.name}
+                    value={formData.name || ''}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full px-8 py-6 border-4 rounded-3xl text-2xl"
+                    required
+                  />
+                  <input
+                    type="text"
+                    placeholder="Size"
+                    value={formData.size || ''}
+                    onChange={(e) => setFormData({ ...formData, size: e.target.value })}
+                    className="w-full px-8 py-6 border-4 rounded-3xl text-2xl"
+                    required
+                  />
+                  <input
+                    type="text"
+                    placeholder="RFID"
+                    value={formData.rfid || ''}
+                    onChange={(e) => setFormData({ ...formData, rfid: e.target.value })}
+                    className="w-full px-8 py-6 border-4 rounded-3xl text-2xl"
+                  />
+                  <input
+                    type="number"
+                    step="0.01"
+                    placeholder="Price"
+                    value={formData.price || ''}
+                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                    className="w-full px-8 py-6 border-4 rounded-3xl text-2xl"
+                    required
+                  />
+                  {formData.id && (
+                    <select
+                      value={formData.status || 'available'}
+                      onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                      className="w-full px-8 py-6 border-4 rounded-3xl text-2xl"
+                    >
+                      <option value="available">{t.available}</option>
+                      <option value="rented">{t.rented}</option>
+                      <option value="cleaning">{t.cleaning}</option>
+                      <option value="maintenance">{t.maintenance}</option>
+                    </select>
+                  )}
+                </>
+              )}
+
+              {modalType === 'rental' && (
+                <>
+                  <select
+                    value={formData.customer_id || ''}
+                    onChange={(e) => setFormData({ ...formData, customer_id: e.target.value })}
+                    className="w-full px-8 py-6 border-4 rounded-3xl text-2xl"
+                    required
+                  >
+                    <option value="">{t.customer}</option>
+                    {customers.map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+
+                  <div>
+                    <label className="block text-2xl font-bold mb-4">{t.items}</label>
+                    <div className="max-h-96 overflow-y-auto border-4 rounded-3xl p-6 space-y-4">
+                      {inventory.filter(i => i.status === 'available' || selectedItems.includes(i.id)).map(item => (
+                        <label key={item.id} className="flex items-center gap-4 cursor-pointer hover:bg-gray-100 p-4 rounded-2xl">
+                          <input
+                            type="checkbox"
+                            checked={selectedItems.includes(item.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedItems([...selectedItems, item.id]);
+                              } else {
+                                setSelectedItems(selectedItems.filter(id => id !== item.id));
+                              }
+                            }}
+                            className="w-8 h-8"
+                          />
+                          <span className="text-xl">{item.name} - Size {item.size} - ${item.price}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <input
+                    type="date"
+                    placeholder={t.eventDate}
+                    value={formData.event_date || ''}
+                    onChange={(e) => setFormData({ ...formData, event_date: e.target.value })}
+                    className="w-full px-8 py-6 border-4 rounded-3xl text-2xl"
+                  />
+
+                  <input
+                    type="date"
+                    placeholder={t.pickupDate}
+                    value={formData.pickup_date || ''}
+                    onChange={(e) => setFormData({ ...formData, pickup_date: e.target.value })}
+                    className="w-full px-8 py-6 border-4 rounded-3xl text-2xl"
+                    required
+                  />
+
+                  <input
+                    type="date"
+                    placeholder={t.returnDate}
+                    value={formData.return_date || ''}
+                    onChange={(e) => setFormData({ ...formData, return_date: e.target.value })}
+                    className="w-full px-8 py-6 border-4 rounded-3xl text-2xl"
+                    required
+                  />
+
+                  <select
+                    value={formData.payment_method || 'cash'}
+                    onChange={(e) => setFormData({ ...formData, payment_method: e.target.value })}
+                    className="w-full px-8 py-6 border-4 rounded-3xl text-2xl"
+                  >
+                    <option value="cash">{t.cash}</option>
+                    <option value="card">{t.card}</option>
+                    <option value="check">{t.check}</option>
+                    <option value="other">{t.other}</option>
+                  </select>
+
+                  <input
+                    type="number"
+                    step="0.01"
+                    placeholder={t.deposit}
+                    value={formData.deposit || ''}
+                    onChange={(e) => setFormData({ ...formData, deposit: e.target.value })}
+                    className="w-full px-8 py-6 border-4 rounded-3xl text-2xl"
+                  />
+
+                  {formData.id && (
+                    <select
+                      value={formData.status || 'reserved'}
+                      onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                      className="w-full px-8 py-6 border-4 rounded-3xl text-2xl"
+                    >
+                      <option value="reserved">Reserved</option>
+                      <option value="picked_up">Picked Up</option>
+                      <option value="returned">Returned</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+                  )}
+
+                  <textarea
+                    placeholder={t.notes}
+                    value={formData.notes || ''}
+                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                    className="w-full px-8 py-6 border-4 rounded-3xl text-2xl"
+                    rows="4"
+                  />
+
+                  {formData.id && (
+                    <div className="border-4 rounded-3xl p-8 bg-gray-50">
+                      <h3 className="text-3xl font-bold mb-6 flex items-center gap-4">
+                        <Ruler size={36} /> {t.alterations}
+                      </h3>
+                      <div className="space-y-4 mb-6">
+                        {alterations.filter(a => a.rental_id === formData.id).map(alt => (
+                          <div key={alt.id} className="bg-white p-4 rounded-2xl flex justify-between items-center">
+                            <div>
+                              <p className="text-xl font-bold">{alt.description}</p>
+                              <p className="text-lg text-gray-600">${alt.cost} - {alt.status}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="space-y-4">
+                        <input
+                          type="text"
+                          placeholder="Alteration Description"
+                          value={formData.alteration_description || ''}
+                          onChange={(e) => setFormData({ ...formData, alteration_description: e.target.value })}
+                          className="w-full px-6 py-4 border-2 rounded-2xl text-xl"
+                        />
+                        <input
+                          type="number"
+                          step="0.01"
+                          placeholder="Cost"
+                          value={formData.alteration_cost || ''}
+                          onChange={(e) => setFormData({ ...formData, alteration_cost: e.target.value })}
+                          className="w-full px-6 py-4 border-2 rounded-2xl text-xl"
+                        />
+                        <button
+                          type="button"
+                          onClick={saveAlteration}
+                          className="w-full bg-purple-600 text-white px-8 py-4 rounded-2xl font-bold text-xl hover:bg-purple-700"
+                        >
+                          {t.addAlteration}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              <button
+                type="submit"
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-8 rounded-3xl font-bold text-4xl hover:scale-105 transition"
+              >
+                <Save size={40} className="inline mr-4" />
+                {t.save}
               </button>
             </form>
           </div>
