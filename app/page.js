@@ -176,14 +176,37 @@ export default function TuxedoAdmin() {
   };
 
   const loadUserProfile = async (userId) => {
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
-    setProfile(data || { role: 'viewer' });
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+      
+      if (error) {
+        console.error('Profile load error:', error);
+        // If no profile exists, create a default viewer profile
+        const { data: newProfile, error: insertError } = await supabase
+          .from('profiles')
+          .insert({ id: userId, role: 'viewer' })
+          .select()
+          .single();
+        
+        if (insertError) {
+          console.error('Profile creation error:', insertError);
+          setProfile({ role: 'viewer' });
+        } else {
+          setProfile(newProfile);
+        }
+      } else {
+        setProfile(data || { role: 'viewer' });
+      }
+    } catch (err) {
+      console.error('Unexpected error loading profile:', err);
+      setProfile({ role: 'viewer' });
+    }
   };
-
+  
   const loadData = async () => {
     const [c, i, r, a, p, u] = await Promise.all([
       supabase.from('customers').select('*').order('name'),
