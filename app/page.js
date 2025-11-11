@@ -5,7 +5,7 @@ import { createClient } from '@supabase/supabase-js';
 import { 
   Calendar, Users, Package, DollarSign, BarChart3, Search, Plus, X, 
   LogOut, Clock, AlertCircle, CheckCircle, Edit2, Upload, Eye, 
-  Printer, Trash2, CreditCard, Save, Ruler, Globe
+  Printer, Trash2, CreditCard, Save, Ruler, Globe, UserCog
 } from 'lucide-react';
 
 // Supabase setup
@@ -33,6 +33,7 @@ const translations = {
     addCustomer: 'ADD CUSTOMER',
     addItem: 'ADD ITEM',
     newRental: 'NEW RENTAL',
+    addUser: 'ADD USER',
     overdueReturns: 'OVERDUE RETURNS',
     todayPickups: 'TODAY\'S PICKUPS',
     todayReturns: 'TODAY\'S RETURNS',
@@ -70,6 +71,12 @@ const translations = {
     rented: 'Rented',
     cleaning: 'Cleaning',
     maintenance: 'Maintenance',
+    role: 'Role',
+    admin: 'Admin',
+    staff: 'Staff',
+    viewer: 'Viewer',
+    password: 'Password',
+    userManagement: 'User Management',
   },
   es: {
     login: 'INICIAR SESIÓN',
@@ -84,6 +91,7 @@ const translations = {
     addCustomer: 'AGREGAR CLIENTE',
     addItem: 'AGREGAR ARTÍCULO',
     newRental: 'NUEVO ALQUILER',
+    addUser: 'AGREGAR USUARIO',
     overdueReturns: 'DEVOLUCIONES VENCIDAS',
     todayPickups: 'RECOLECCIONES DE HOY',
     todayReturns: 'DEVOLUCIONES DE HOY',
@@ -121,6 +129,12 @@ const translations = {
     rented: 'Alquilado',
     cleaning: 'Limpieza',
     maintenance: 'Mantenimiento',
+    role: 'Rol',
+    admin: 'Administrador',
+    staff: 'Personal',
+    viewer: 'Visualizador',
+    password: 'Contraseña',
+    userManagement: 'Gestión de Usuarios',
   }
 };
 
@@ -132,6 +146,7 @@ export default function TuxedoAdmin() {
   const [customers, setCustomers] = useState([]);
   const [inventory, setInventory] = useState([]);
   const [rentals, setRentals] = useState([]);
+  const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState('');
@@ -170,7 +185,7 @@ export default function TuxedoAdmin() {
   };
 
   const loadData = async () => {
-    const [c, i, r, a, p] = await Promise.all([
+    const [c, i, r, a, p, u] = await Promise.all([
       supabase.from('customers').select('*').order('name'),
       supabase.from('inventory').select('*').order('name'),
       supabase.from('rentals').select(`
@@ -178,7 +193,12 @@ export default function TuxedoAdmin() {
         customers(name, phone, email)
       `).order('created_at', { ascending: false }),
       supabase.from('alterations').select('*'),
-      supabase.from('payments').select('*')
+      supabase.from('payments').select('*'),
+      supabase.from('profiles').select(`
+        id,
+        role,
+        created_at
+      `).order('created_at', { ascending: false })
     ]);
 
     setCustomers(c.data || []);
@@ -186,6 +206,20 @@ export default function TuxedoAdmin() {
     setRentals(r.data || []);
     setAlterations(a.data || []);
     setPayments(p.data || []);
+    
+    // Load user emails from auth.users
+    if (u.data) {
+      const userIds = u.data.map(p => p.id);
+      const { data: authUsers } = await supabase.auth.admin.listUsers();
+      const enrichedUsers = u.data.map(profile => {
+        const authUser = authUsers?.users?.find(au => au.id === profile.id);
+        return {
+          ...profile,
+          email: authUser?.email || 'N/A'
+        };
+      });
+      setUsers(enrichedUsers);
+    }
   };
 
   const handleLogin = async (e) => {
@@ -306,7 +340,6 @@ export default function TuxedoAdmin() {
 
   const saveRental = async () => {
     try {
-      // Check for date conflicts
       const conflicts = await checkDateConflicts(
         selectedItems,
         formData.pickup_date,
@@ -354,6 +387,37 @@ export default function TuxedoAdmin() {
     }
   };
 
+  const saveUser = async () => {
+    try {
+      if (formData.id) {
+        // Update existing user role
+        await supabase
+          .from('profiles')
+          .update({ role: formData.role })
+          .eq('id', formData.id);
+      } else {
+        // Create new user
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+        });
+
+        if (authError) throw authError;
+
+        // Create profile with role
+        await supabase.from('profiles').insert({
+          id: authData.user.id,
+          role: formData.role || 'viewer'
+        });
+      }
+
+      await loadData();
+      closeModal();
+    } catch (error) {
+      alert('Error saving user: ' + error.message);
+    }
+  };
+
   const saveAlteration = async () => {
     try {
       const data = {
@@ -380,7 +444,6 @@ export default function TuxedoAdmin() {
         payment_date: today
       });
 
-      // Update rental paid_amount
       const rental = rentals.find(r => r.id === rentalId);
       const newPaidAmount = (rental.paid_amount || 0) + parseFloat(amount);
       await supabase.from('rentals').update({ paid_amount: newPaidAmount }).eq('id', rentalId);
@@ -491,6 +554,10 @@ export default function TuxedoAdmin() {
     i.rfid?.toLowerCase().includes(searchTerm)
   );
 
+  const filteredUsers = users.filter(u =>
+    u.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   const getRentalBalance = (rental) => {
     const rentalAlterations = alterations.filter(a => a.rental_id === rental.id);
     const alterationsCost = rentalAlterations.reduce((sum, a) => sum + (a.cost || 0), 0);
@@ -535,7 +602,7 @@ export default function TuxedoAdmin() {
               { id: 'inventory', label: t.inventory, icon: Package },
               { id: 'billing', label: t.billing, icon: DollarSign },
               { id: 'analytics', label: t.analytics, icon: BarChart3 },
-              ...(profile?.role === 'admin' ? [{ id: 'users', label: t.users, icon: Users }] : [])
+              ...(profile?.role === 'admin' ? [{ id: 'users', label: t.users, icon: UserCog }] : [])
             ].map(tab => {
               const Icon = tab.icon;
               return (
@@ -574,12 +641,14 @@ export default function TuxedoAdmin() {
                       <p className="text-2xl text-red-600">Due: {r.return_date}</p>
                       <p className="text-xl text-gray-600">Event: {r.event_date || 'N/A'}</p>
                     </div>
-                    <button
-                      onClick={() => handleCheckIn(r.id)}
-                      className="bg-red-600 text-white px-16 py-8 rounded-3xl font-bold text-3xl hover:bg-red-700"
-                    >
-                      {t.checkInNow}
-                    </button>
+                    {hasPermission('edit') && (
+                      <button
+                        onClick={() => handleCheckIn(r.id)}
+                        className="bg-red-600 text-white px-16 py-8 rounded-3xl font-bold text-3xl hover:bg-red-700"
+                      >
+                        {t.checkInNow}
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>
@@ -598,12 +667,14 @@ export default function TuxedoAdmin() {
                       <p className="text-xl text-gray-600">Event: {r.event_date || 'N/A'}</p>
                       <p className="text-lg text-gray-500">{r.item_ids.length} items</p>
                     </div>
-                    <button
-                      onClick={() => handlePickup(r.id)}
-                      className="bg-blue-600 text-white px-16 py-8 rounded-3xl font-bold text-3xl hover:bg-blue-700"
-                    >
-                      {t.markPickedUp}
-                    </button>
+                    {hasPermission('edit') && (
+                      <button
+                        onClick={() => handlePickup(r.id)}
+                        className="bg-blue-600 text-white px-16 py-8 rounded-3xl font-bold text-3xl hover:bg-blue-700"
+                      >
+                        {t.markPickedUp}
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>
@@ -621,12 +692,14 @@ export default function TuxedoAdmin() {
                       <p className="text-2xl text-green-600">Return: {r.return_date}</p>
                       <p className="text-xl text-gray-600">Event: {r.event_date || 'N/A'}</p>
                     </div>
-                    <button
-                      onClick={() => handleCheckIn(r.id)}
-                      className="bg-green-600 text-white px-16 py-8 rounded-3xl font-bold text-3xl hover:bg-green-700"
-                    >
-                      {t.checkInNow}
-                    </button>
+                    {hasPermission('edit') && (
+                      <button
+                        onClick={() => handleCheckIn(r.id)}
+                        className="bg-green-600 text-white px-16 py-8 rounded-3xl font-bold text-3xl hover:bg-green-700"
+                      >
+                        {t.checkInNow}
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>
@@ -659,7 +732,9 @@ export default function TuxedoAdmin() {
                     <th className="px-10 py-8 text-left font-bold">{t.status}</th>
                     <th className="px-10 py-8 text-left font-bold">{t.total}</th>
                     <th className="px-10 py-8 text-left font-bold">{t.balance}</th>
-                    <th className="px-10 py-8 text-left font-bold">{t.actions}</th>
+                    {hasPermission('edit') && (
+                      <th className="px-10 py-8 text-left font-bold">{t.actions}</th>
+                    )}
                   </tr>
                 </thead>
                 <tbody>
@@ -687,22 +762,24 @@ export default function TuxedoAdmin() {
                             ${balance.toFixed(2)}
                           </span>
                         </td>
-                        <td className="px-10 py-8 flex gap-2">
-                          <button
-                            onClick={() => openModal('rental', r)}
-                            className="text-blue-600 p-4 rounded-xl hover:bg-blue-100"
-                          >
-                            <Edit2 size={28} />
-                          </button>
-                          {hasPermission('delete') && (
+                        {hasPermission('edit') && (
+                          <td className="px-10 py-8 flex gap-2">
                             <button
-                              onClick={() => deleteItem('rentals', r.id)}
-                              className="text-red-600 p-4 rounded-xl hover:bg-red-100"
+                              onClick={() => openModal('rental', r)}
+                              className="text-blue-600 p-4 rounded-xl hover:bg-blue-100"
                             >
-                              <Trash2 size={28} />
+                              <Edit2 size={28} />
                             </button>
-                          )}
-                        </td>
+                            {hasPermission('delete') && (
+                              <button
+                                onClick={() => deleteItem('rentals', r.id)}
+                                className="text-red-600 p-4 rounded-xl hover:bg-red-100"
+                              >
+                                <Trash2 size={28} />
+                              </button>
+                            )}
+                          </td>
+                        )}
                       </tr>
                     );
                   })}
@@ -743,7 +820,9 @@ export default function TuxedoAdmin() {
                     <th className="px-10 py-8 text-left font-bold">{t.phone}</th>
                     <th className="px-10 py-8 text-left font-bold">{t.email}</th>
                     <th className="px-10 py-8 text-left font-bold">{t.idPhoto}</th>
-                    <th className="px-10 py-8 text-left font-bold">{t.actions}</th>
+                    {hasPermission('edit') && (
+                      <th className="px-10 py-8 text-left font-bold">{t.actions}</th>
+                    )}
                   </tr>
                 </thead>
                 <tbody>
@@ -762,22 +841,24 @@ export default function TuxedoAdmin() {
                           </button>
                         ) : '—'}
                       </td>
-                      <td className="px-10 py-8 flex gap-2">
-                        <button
-                          onClick={() => openModal('customer', c)}
-                          className="text-blue-600 p-4 rounded-xl hover:bg-blue-100"
-                        >
-                          <Edit2 size={28} />
-                        </button>
-                        {hasPermission('delete') && (
+                      {hasPermission('edit') && (
+                        <td className="px-10 py-8 flex gap-2">
                           <button
-                            onClick={() => deleteItem('customers', c.id)}
-                            className="text-red-600 p-4 rounded-xl hover:bg-red-100"
+                            onClick={() => openModal('customer', c)}
+                            className="text-blue-600 p-4 rounded-xl hover:bg-blue-100"
                           >
-                            <Trash2 size={28} />
+                            <Edit2 size={28} />
                           </button>
-                        )}
-                      </td>
+                          {hasPermission('delete') && (
+                            <button
+                              onClick={() => deleteItem('customers', c.id)}
+                              className="text-red-600 p-4 rounded-xl hover:bg-red-100"
+                            >
+                              <Trash2 size={28} />
+                            </button>
+                          )}
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
@@ -824,24 +905,95 @@ export default function TuxedoAdmin() {
                   }`}>
                     {t[item.status] || item.status}
                   </span>
-                  <div className="flex gap-2 mt-6">
-                    <button
-                      onClick={() => openModal('inventory', item)}
-                      className="flex-1 bg-blue-600 text-white px-6 py-4 rounded-2xl font-bold hover:bg-blue-700"
-                    >
-                      {t.edit}
-                    </button>
-                    {hasPermission('delete') && (
+                  {hasPermission('edit') && (
+                    <div className="flex gap-2 mt-6">
                       <button
-                        onClick={() => deleteItem('inventory', item.id)}
-                        className="bg-red-600 text-white px-6 py-4 rounded-2xl font-bold hover:bg-red-700"
+                        onClick={() => openModal('inventory', item)}
+                        className="flex-1 bg-blue-600 text-white px-6 py-4 rounded-2xl font-bold hover:bg-blue-700"
                       >
-                        <Trash2 size={24} />
+                        {t.edit}
                       </button>
-                    )}
-                  </div>
+                      {hasPermission('delete') && (
+                        <button
+                          onClick={() => deleteItem('inventory', item.id)}
+                          className="bg-red-600 text-white px-6 py-4 rounded-2xl font-bold hover:bg-red-700"
+                        >
+                          <Trash2 size={24} />
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Users Tab (Admin Only) */}
+        {activeTab === 'users' && profile?.role === 'admin' && (
+          <div>
+            <div className="flex justify-between items-center mb-10">
+              <h2 className="text-5xl font-bold">{t.userManagement}</h2>
+              <button
+                onClick={() => openModal('user')}
+                className="flex items-center gap-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-12 py-6 rounded-3xl font-bold text-3xl hover:scale-105 transition"
+              >
+                <Plus size={40} /> {t.addUser}
+              </button>
+            </div>
+            <div className="mb-6">
+              <input
+                type="text"
+                placeholder={`${t.search}...`}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-8 py-6 border-4 rounded-3xl text-2xl"
+              />
+            </div>
+            <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
+              <table className="w-full text-lg">
+                <thead className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+                  <tr>
+                    <th className="px-10 py-8 text-left font-bold">{t.email}</th>
+                    <th className="px-10 py-8 text-left font-bold">{t.role}</th>
+                    <th className="px-10 py-8 text-left font-bold">Created</th>
+                    <th className="px-10 py-8 text-left font-bold">{t.actions}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredUsers.map(u => (
+                    <tr key={u.id} className="border-b hover:bg-gray-50">
+                      <td className="px-10 py-8 font-bold">{u.email}</td>
+                      <td className="px-10 py-8">
+                        <span className={`px-4 py-2 rounded-full text-sm font-bold ${
+                          u.role === 'admin' ? 'bg-purple-200 text-purple-800' :
+                          u.role === 'staff' ? 'bg-blue-200 text-blue-800' :
+                          'bg-gray-200 text-gray-800'
+                        }`}>
+                          {t[u.role] || u.role}
+                        </span>
+                      </td>
+                      <td className="px-10 py-8">{new Date(u.created_at).toLocaleDateString()}</td>
+                      <td className="px-10 py-8 flex gap-2">
+                        <button
+                          onClick={() => openModal('user', u)}
+                          className="text-blue-600 p-4 rounded-xl hover:bg-blue-100"
+                        >
+                          <Edit2 size={28} />
+                        </button>
+                        {u.id !== user.id && (
+                          <button
+                            onClick={() => deleteItem('profiles', u.id)}
+                            className="text-red-600 p-4 rounded-xl hover:bg-red-100"
+                          >
+                            <Trash2 size={28} />
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         )}
@@ -855,6 +1007,7 @@ export default function TuxedoAdmin() {
               <h2 className="text-6xl font-bold">
                 {modalType === 'customer' ? (formData.id ? `${t.edit} ${t.customer}` : t.addCustomer) :
                  modalType === 'inventory' ? (formData.id ? `${t.edit} ${t.inventory}` : t.addItem) :
+                 modalType === 'user' ? (formData.id ? `${t.edit} ${t.users}` : t.addUser) :
                  formData.id ? `${t.edit} ${t.rentals}` : t.newRental}
               </h2>
               <button onClick={closeModal} className="text-gray-500 hover:text-red-600">
@@ -867,6 +1020,7 @@ export default function TuxedoAdmin() {
                 e.preventDefault();
                 if (modalType === 'customer') saveCustomer();
                 else if (modalType === 'inventory') saveInventory();
+                else if (modalType === 'user') saveUser();
                 else saveRental();
               }}
               className="space-y-10"
@@ -954,6 +1108,42 @@ export default function TuxedoAdmin() {
                       <option value="maintenance">{t.maintenance}</option>
                     </select>
                   )}
+                </>
+              )}
+
+              {modalType === 'user' && (
+                <>
+                  {!formData.id && (
+                    <>
+                      <input
+                        type="email"
+                        placeholder={t.email}
+                        value={formData.email || ''}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        className="w-full px-8 py-6 border-4 rounded-3xl text-2xl"
+                        required
+                      />
+                      <input
+                        type="password"
+                        placeholder={t.password}
+                        value={formData.password || ''}
+                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        className="w-full px-8 py-6 border-4 rounded-3xl text-2xl"
+                        required
+                        minLength={6}
+                      />
+                    </>
+                  )}
+                  <select
+                    value={formData.role || 'viewer'}
+                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                    className="w-full px-8 py-6 border-4 rounded-3xl text-2xl"
+                    required
+                  >
+                    <option value="admin">{t.admin}</option>
+                    <option value="staff">{t.staff}</option>
+                    <option value="viewer">{t.viewer}</option>
+                  </select>
                 </>
               )}
 
