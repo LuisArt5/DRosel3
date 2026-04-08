@@ -179,6 +179,8 @@ export default function TuxedoAdmin() {
   const [payments, setPayments] = useState([]);
   const [contractRental, setContractRental] = useState(null);
   const [analyticsFilter, setAnalyticsFilter] = useState('thisYear');
+  const [utilizationCategory, setUtilizationCategory] = useState('all');
+  const [utilizationLimit, setUtilizationLimit] = useState(10);
   const [billingRentalId, setBillingRentalId] = useState('');
   const [billingAmount, setBillingAmount] = useState('');
   const [billingMethod, setBillingMethod] = useState('cash');
@@ -621,13 +623,16 @@ export default function TuxedoAdmin() {
     }));
   };
 
-  const getInventoryUtilization = () => {
+  const getInventoryUtilization = (catFilter, limit) => {
     const counts = {};
     rentals.forEach(r => (r.item_ids || []).forEach(id => { counts[id] = (counts[id] || 0) + 1; }));
-    return inventory
-      .map(item => ({ name: item.name.length > 18 ? item.name.slice(0, 18) + '…' : item.name, times: counts[item.id] || 0 }))
-      .sort((a, b) => b.times - a.times)
-      .slice(0, 10);
+    const filtered = catFilter && catFilter !== 'all'
+      ? inventory.filter(item => (item.category || '') === catFilter)
+      : inventory;
+    const all = filtered
+      .map(item => ({ name: item.name.length > 20 ? item.name.slice(0, 20) + '…' : item.name, times: counts[item.id] || 0, category: item.category || '' }))
+      .sort((a, b) => b.times - a.times);
+    return limit ? all.slice(0, limit) : all;
   };
 
   const getTopCustomers = () => {
@@ -1809,20 +1814,51 @@ export default function TuxedoAdmin() {
 
             {/* Inventory Utilization */}
             <div className="bg-white rounded-3xl shadow-xl p-8">
-              <h3 className="text-2xl font-bold mb-6">{t.inventoryUtilization}</h3>
-              {getInventoryUtilization().some(i => i.times > 0) ? (
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={getInventoryUtilization()}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" angle={-25} textAnchor="end" height={60} tick={{ fontSize: 12 }} />
-                    <YAxis allowDecimals={false} />
+              <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
+                <h3 className="text-2xl font-bold">{t.inventoryUtilization}</h3>
+                <div className="flex flex-wrap gap-2 items-center">
+                  <select
+                    value={utilizationCategory}
+                    onChange={e => { setUtilizationCategory(e.target.value); setUtilizationLimit(10); }}
+                    className="px-4 py-2 border-2 rounded-xl text-sm font-medium min-h-[40px]"
+                  >
+                    <option value="all">{t.allCategories}</option>
+                    {Array.from(new Set(inventory.map(i => i.category || '').filter(Boolean))).sort().map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={utilizationLimit}
+                    onChange={e => setUtilizationLimit(Number(e.target.value))}
+                    className="px-4 py-2 border-2 rounded-xl text-sm font-medium min-h-[40px]"
+                  >
+                    <option value={10}>Top 10</option>
+                    <option value={25}>Top 25</option>
+                    <option value={50}>Top 50</option>
+                    <option value={0}>{language === 'es' ? 'Todos' : 'All'}</option>
+                  </select>
+                </div>
+              </div>
+              {getInventoryUtilization(utilizationCategory, utilizationLimit).some(i => i.times > 0) ? (
+                <ResponsiveContainer width="100%" height={Math.max(300, getInventoryUtilization(utilizationCategory, utilizationLimit).length * 28)}>
+                  <BarChart data={getInventoryUtilization(utilizationCategory, utilizationLimit)} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                    <XAxis type="number" allowDecimals={false} />
+                    <YAxis type="category" dataKey="name" width={140} tick={{ fontSize: 12 }} />
                     <Tooltip />
-                    <Bar dataKey="times" fill="#6366f1" name={t.timesRented} radius={[6, 6, 0, 0]} />
+                    <Bar dataKey="times" fill="#6366f1" name={t.timesRented} radius={[0, 6, 6, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
                 <div className="text-center py-16 text-gray-400">{t.noData}</div>
               )}
+              <div className="mt-3 text-sm text-gray-400 text-right">
+                {(() => {
+                  const total = getInventoryUtilization(utilizationCategory, 0).length;
+                  const shown = getInventoryUtilization(utilizationCategory, utilizationLimit).length;
+                  return `${language === 'es' ? 'Mostrando' : 'Showing'} ${shown} ${language === 'es' ? 'de' : 'of'} ${total} ${language === 'es' ? 'artículos' : 'items'}`;
+                })()}
+              </div>
             </div>
 
             {/* Status Breakdown + Payment Method */}
