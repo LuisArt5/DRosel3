@@ -2140,7 +2140,7 @@ export default function TuxedoAdmin() {
                           <td className="px-6 py-5">
                             {hasPermission('edit') && (
                               <button onClick={() => markCleaningReturned(item.id)}
-                                className="bg-blue-800 text-white px-5 py-3 rounded-2xl font-bold hover:bg-blue-900 min-h-[48px]">
+                                className="bg-red-600 text-white px-5 py-3 rounded-2xl font-bold hover:bg-red-700 min-h-[48px]">
                                 {t.markReturned}
                               </button>
                             )}
