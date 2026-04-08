@@ -1466,7 +1466,7 @@ export default function TuxedoAdmin() {
                           <span className={`px-3 py-1 rounded-full text-sm font-bold ${
                             r.status === 'reserved' ? 'bg-blue-100 text-blue-800' :
                             r.status === 'picked_up' ? 'bg-sky-100 text-sky-700' :
-                            r.status === 'returned' ? 'bg-slate-100 text-slate-600' :
+                            r.status === 'returned' ? 'bg-red-100 text-red-700' :
                             'bg-gray-100 text-gray-800'}`}>
                             {t[r.status] || r.status}
                           </span>
@@ -1780,7 +1780,7 @@ export default function TuxedoAdmin() {
                           <span className={`px-3 py-1 rounded-full text-sm font-bold ${
                             r.status === 'reserved' ? 'bg-blue-100 text-blue-800' :
                             r.status === 'picked_up' ? 'bg-sky-100 text-sky-700' :
-                            r.status === 'returned' ? 'bg-slate-100 text-slate-600' :
+                            r.status === 'returned' ? 'bg-red-100 text-red-700' :
                             'bg-gray-100 text-gray-800'}`}>
                             {t[r.status] || r.status}
                           </span>
