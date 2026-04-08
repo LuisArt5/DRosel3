@@ -1148,7 +1148,7 @@ export default function TuxedoAdmin() {
               { id: 'customers', label: t.customers, icon: Users },
               { id: 'inventory', label: t.inventory, icon: Package },
               { id: 'billing', label: t.billing, icon: DollarSign },
-              { id: 'analytics', label: t.analytics, icon: BarChart3 },
+              ...(profile?.role !== 'staff' ? [{ id: 'analytics', label: t.analytics, icon: BarChart3 }] : []),
               { id: 'cleaner', label: t.cleanerTab, icon: Ruler },
               ...(profile?.role === 'admin' ? [
                 { id: 'stores', label: t.stores, icon: Building2 },
@@ -1720,7 +1720,7 @@ export default function TuxedoAdmin() {
         )}
 
         {/* ════ ANALYTICS ═══════════════════════════════════════════════════ */}
-        {activeTab === 'analytics' && (
+        {activeTab === 'analytics' && profile?.role !== 'staff' && (
           <div className="space-y-8">
             <div className="flex justify-between items-center flex-wrap gap-4">
               <h2 className="text-4xl font-bold">{t.analytics}</h2>
