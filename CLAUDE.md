@@ -1,4 +1,4 @@
-# Tuxedo Admin — Claude Context
+# D'Rosel Tuxedo Rentals — Claude Context
 
 ## Purpose
 Multi-store tuxedo/formal wear rental management system. Handles the full rental lifecycle (reservation → pickup → return), customer profiles, inventory with RFID tagging, payments, alterations, bilingual UI (EN/ES), and contract printing.

@@ -1,4 +1,4 @@
-# Quick Start — Tuxedo Admin
+# Quick Start — D'Rosel Tuxedo Rentals
 
 ## 5-Minute Setup
 

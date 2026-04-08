@@ -1,4 +1,4 @@
-# Tuxedo Admin
+# D'Rosel Tuxedo Rentals
 
 Multi-store tuxedo and formal wear rental management system. Handles the full rental lifecycle (reservation → pickup → return), customer profiles with measurements, inventory with categories and RFID tagging, payments, alterations, dry cleaner tracking, bilingual UI (EN/ES), contract printing, and analytics.
 

@@ -1,4 +1,4 @@
-# Tuxedo Admin — Project Summary
+# D'Rosel Tuxedo Rentals — Project Summary
 
 ## What It Is
 

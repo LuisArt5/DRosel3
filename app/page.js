@@ -747,7 +747,7 @@ export default function TuxedoAdmin() {
         <div className="bg-white p-12 rounded-3xl shadow-2xl w-96">
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              TUXEDO ADMIN
+              D'ROSEL TUXEDO RENTALS
             </h1>
             <button onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
               className="p-3 hover:bg-gray-100 rounded-full min-h-[48px] min-w-[48px] flex items-center justify-center">
@@ -1036,7 +1036,7 @@ export default function TuxedoAdmin() {
       <div id="analytics-print-wrapper">
         <div style={{ fontFamily: 'Arial, sans-serif', fontSize: '12px', color: '#111', padding: '0.25in' }}>
           <div style={{ borderBottom: '3px solid #4f46e5', paddingBottom: 12, marginBottom: 20 }}>
-            <h1 style={{ fontSize: 26, fontWeight: 'bold', color: '#1e1b4b', margin: 0 }}>TUXEDO ADMIN — {t.analytics.toUpperCase()}</h1>
+            <h1 style={{ fontSize: 26, fontWeight: 'bold', color: '#1e1b4b', margin: 0 }}>D'ROSEL TUXEDO RENTALS — {t.analytics.toUpperCase()}</h1>
             <p style={{ margin: '4px 0 0', color: '#555', fontSize: 12 }}>
               {t[analyticsFilter]} &nbsp;|&nbsp; {new Date().toLocaleDateString(language === 'es' ? 'es-MX' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
             </p>
@@ -1105,7 +1105,7 @@ export default function TuxedoAdmin() {
       {/* ── Header ────────────────────────────────────────────────────────── */}
       <header className="bg-slate-900 text-white shadow-2xl sticky top-0 z-40">
         <div className="max-w-full px-6 py-4 flex justify-between items-center gap-4">
-          <h1 className="text-3xl font-bold whitespace-nowrap">Tuxedo Admin</h1>
+          <h1 className="text-3xl font-bold whitespace-nowrap">D'Rosel Tuxedo Rentals</h1>
           <div className="flex items-center gap-3 flex-wrap justify-end">
             {/* Store Selector */}
             <select
