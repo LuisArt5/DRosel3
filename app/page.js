@@ -1482,7 +1482,7 @@ export default function TuxedoAdmin() {
                           <div className="flex gap-2 flex-wrap">
                             {hasPermission('edit') && balance > 0 && (
                               <button onClick={() => { setQuickPayRental(r); setQuickPayMethod('cash'); }}
-                                className="flex items-center gap-2 bg-blue-800 text-white px-4 py-3 rounded-xl font-bold hover:bg-blue-900 min-h-[48px] text-sm">
+                                className="flex items-center gap-2 bg-green-600 text-white px-4 py-3 rounded-xl font-bold hover:bg-green-700 min-h-[48px] text-sm">
                                 <CreditCard size={16} /> {t.payBalance}
                               </button>
                             )}
@@ -1741,7 +1741,7 @@ export default function TuxedoAdmin() {
                   </div>
                   <button
                     onClick={() => billingRentalId && billingAmount && addPayment(billingRentalId, billingAmount, billingMethod)}
-                    className="bg-blue-800 text-white px-8 py-4 rounded-2xl font-bold text-xl hover:bg-blue-900 min-h-[56px]">
+                    className="bg-green-600 text-white px-8 py-4 rounded-2xl font-bold text-xl hover:bg-green-700 min-h-[56px]">
                     <CreditCard size={22} className="inline mr-2" /> {t.addPayment}
                   </button>
                 </div>
