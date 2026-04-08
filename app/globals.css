@@ -1,5 +1,17 @@
 @import "tailwindcss";
 
+/* Touch optimization */
+* { -webkit-tap-highlight-color: transparent; }
+button, select, input, textarea { touch-action: manipulation; }
+
+/* Print: show contract or analytics report, hide everything else */
+@media print {
+  body > div > *:not(#contract-print-wrapper):not(#analytics-print-wrapper) { display: none !important; }
+  #contract-print-wrapper { display: block !important; position: static !important; }
+  #analytics-print-wrapper { display: block !important; position: static !important; }
+  @page { margin: 0.5in; size: letter; }
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;

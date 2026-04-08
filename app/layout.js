@@ -7,7 +7,7 @@ export default function RootLayout({ children }) {
         <title>Tuxedo Rental Admin</title>
         <script src="https://cdn.tailwindcss.com"></script>
       </head>
-      <body className="antialiased">
+      <body className="antialiased" suppressHydrationWarning>
         {children}
       </body>
     </html>
