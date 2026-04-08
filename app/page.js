@@ -748,30 +748,96 @@ export default function TuxedoAdmin() {
   // ─── Login ────────────────────────────────────────────────────────────────
   if (!user) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-900 to-purple-900">
-        <div className="bg-white p-12 rounded-3xl shadow-2xl w-96">
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              D'ROSEL TUXEDO RENTALS
+      <div className="flex min-h-screen">
+        {/* Left panel — branding */}
+        <div className="hidden lg:flex flex-col justify-between w-1/2 bg-gradient-to-br from-slate-900 via-indigo-950 to-purple-900 p-14 text-white relative overflow-hidden">
+          {/* Decorative circles */}
+          <div style={{ position: 'absolute', top: '-80px', right: '-80px', width: '400px', height: '400px', borderRadius: '50%', background: 'rgba(139,92,246,0.15)' }} />
+          <div style={{ position: 'absolute', bottom: '-100px', left: '-60px', width: '350px', height: '350px', borderRadius: '50%', background: 'rgba(99,102,241,0.12)' }} />
+          <div className="relative z-10">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center">
+                <span style={{ fontSize: 20 }}>🎩</span>
+              </div>
+              <span className="text-lg font-semibold tracking-wide opacity-80">D'Rosel</span>
+            </div>
+            <h1 className="text-5xl font-bold leading-tight mb-4">
+              Tuxedo<br />Rentals
             </h1>
-            <button onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
-              className="p-3 hover:bg-gray-100 rounded-full min-h-[48px] min-w-[48px] flex items-center justify-center">
-              <Globe size={28} />
-            </button>
+            <p className="text-lg opacity-60 leading-relaxed max-w-xs">
+              {language === 'es'
+                ? 'Gestiona tu negocio de renta de trajes con elegancia y eficiencia.'
+                : 'Manage your formalwear rental business with elegance and efficiency.'}
+            </p>
           </div>
-          {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">{error}</div>}
-          <form onSubmit={handleLogin} className="space-y-6">
-            <input type="email" placeholder="Email" value={loginData.email}
-              onChange={e => setLoginData({ ...loginData, email: e.target.value })}
-              className="w-full px-6 py-4 border-2 rounded-xl text-xl" required />
-            <input type="password" placeholder={t.password} value={loginData.password}
-              onChange={e => setLoginData({ ...loginData, password: e.target.value })}
-              className="w-full px-6 py-4 border-2 rounded-xl text-xl" required />
-            <button type="submit"
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-6 rounded-2xl font-bold text-2xl hover:scale-105 transition min-h-[64px]">
-              {t.login}
-            </button>
-          </form>
+          <div className="relative z-10 space-y-4">
+            {[
+              language === 'es' ? '✦ Gestión multi-tienda' : '✦ Multi-store management',
+              language === 'es' ? '✦ Ciclo completo de renta' : '✦ Full rental lifecycle',
+              language === 'es' ? '✦ Seguimiento de inventario' : '✦ Inventory tracking',
+              language === 'es' ? '✦ Análisis e informes' : '✦ Analytics & reports',
+            ].map(f => (
+              <div key={f} className="text-sm opacity-50 tracking-wide">{f}</div>
+            ))}
+          </div>
+        </div>
+
+        {/* Right panel — form */}
+        <div className="flex flex-1 flex-col items-center justify-center bg-gray-50 px-8 py-12">
+          <div className="w-full max-w-md">
+            {/* Mobile logo */}
+            <div className="lg:hidden flex items-center gap-3 mb-10">
+              <span style={{ fontSize: 28 }}>🎩</span>
+              <span className="text-2xl font-bold text-slate-800">D'Rosel Tuxedo Rentals</span>
+            </div>
+
+            <div className="flex justify-between items-start mb-10">
+              <div>
+                <h2 className="text-3xl font-bold text-slate-900 mb-1">
+                  {language === 'es' ? 'Bienvenido' : 'Welcome back'}
+                </h2>
+                <p className="text-gray-400 text-sm">
+                  {language === 'es' ? 'Inicia sesión en tu cuenta' : 'Sign in to your account'}
+                </p>
+              </div>
+              <button onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
+                className="flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-indigo-600 transition px-3 py-2 rounded-xl hover:bg-indigo-50 min-h-[44px]">
+                <Globe size={16} />
+                {language === 'en' ? 'ES' : 'EN'}
+              </button>
+            </div>
+
+            {error && (
+              <div className="mb-6 px-4 py-3 bg-red-50 border border-red-200 text-red-600 rounded-2xl text-sm flex items-center gap-2">
+                <AlertCircle size={16} className="shrink-0" /> {error}
+              </div>
+            )}
+
+            <form onSubmit={handleLogin} className="space-y-5">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+                <input type="email" placeholder="you@example.com" value={loginData.email}
+                  onChange={e => setLoginData({ ...loginData, email: e.target.value })}
+                  className="w-full px-5 py-4 bg-white border-2 border-gray-200 rounded-2xl text-base focus:outline-none focus:border-indigo-500 transition min-h-[56px]"
+                  required />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">{t.password}</label>
+                <input type="password" placeholder="••••••••" value={loginData.password}
+                  onChange={e => setLoginData({ ...loginData, password: e.target.value })}
+                  className="w-full px-5 py-4 bg-white border-2 border-gray-200 rounded-2xl text-base focus:outline-none focus:border-indigo-500 transition min-h-[56px]"
+                  required />
+              </div>
+              <button type="submit"
+                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-4 rounded-2xl font-bold text-lg tracking-wide shadow-lg hover:shadow-indigo-200 hover:scale-[1.02] transition-all min-h-[60px] mt-2">
+                {t.login} →
+              </button>
+            </form>
+
+            <p className="mt-10 text-center text-xs text-gray-400">
+              © {new Date().getFullYear()} D'Rosel Tuxedo Rentals. All rights reserved.
+            </p>
+          </div>
         </div>
       </div>
     );
