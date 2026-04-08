@@ -174,6 +174,7 @@ export default function TuxedoAdmin() {
   const [selectedItems, setSelectedItems] = useState([]);
   const [language, setLanguage] = useState('en');
   const [loginData, setLoginData] = useState({ email: '', password: '' });
+  const [forgotSent, setForgotSent] = useState(false);
   const [error, setError] = useState('');
   const [alterations, setAlterations] = useState([]);
   const [payments, setPayments] = useState([]);
@@ -271,6 +272,19 @@ export default function TuxedoAdmin() {
     setUser(data.user);
     await loadUserProfile(data.user.id);
     await loadData('all');
+  };
+
+  const handleForgotPassword = async () => {
+    if (!loginData.email) {
+      setError(language === 'es' ? 'Ingresa tu correo primero.' : 'Enter your email address first.');
+      return;
+    }
+    setError('');
+    const { error } = await supabase.auth.resetPasswordForEmail(loginData.email, {
+      redirectTo: window.location.origin,
+    });
+    if (error) { setError(error.message); return; }
+    setForgotSent(true);
   };
 
   const signOut = async () => {
@@ -764,10 +778,8 @@ export default function TuxedoAdmin() {
             <h1 className="text-5xl font-bold leading-tight mb-4">
               Tuxedo<br />Rentals
             </h1>
-            <p className="text-lg opacity-60 leading-relaxed max-w-xs">
-              {language === 'es'
-                ? 'Gestiona tu negocio de renta de trajes con elegancia y eficiencia.'
-                : 'Manage your formalwear rental business with elegance and efficiency.'}
+            <p className="text-lg font-semibold opacity-70 leading-relaxed max-w-xs tracking-wide">
+              {language === 'es' ? 'Sistema de gestión D\'Rosel' : 'D\'Rosel Management System'}
             </p>
           </div>
           <div className="relative z-10 space-y-4">
@@ -813,26 +825,52 @@ export default function TuxedoAdmin() {
               </div>
             )}
 
-            <form onSubmit={handleLogin} className="space-y-5">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
-                <input type="email" placeholder="you@example.com" value={loginData.email}
-                  onChange={e => setLoginData({ ...loginData, email: e.target.value })}
-                  className="w-full px-5 py-4 bg-white border-2 border-gray-200 rounded-2xl text-base focus:outline-none focus:border-indigo-500 transition min-h-[56px]"
-                  required />
+            {forgotSent ? (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle size={32} className="text-green-600" />
+                </div>
+                <h3 className="text-lg font-bold text-slate-800 mb-2">
+                  {language === 'es' ? '¡Correo enviado!' : 'Email sent!'}
+                </h3>
+                <p className="text-gray-500 text-sm mb-6">
+                  {language === 'es'
+                    ? 'Revisa tu bandeja de entrada y sigue el enlace para restablecer tu contraseña.'
+                    : 'Check your inbox and follow the link to reset your password.'}
+                </p>
+                <button onClick={() => { setForgotSent(false); setError(''); }}
+                  className="text-indigo-600 font-semibold text-sm hover:underline">
+                  ← {language === 'es' ? 'Volver al inicio de sesión' : 'Back to sign in'}
+                </button>
               </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">{t.password}</label>
-                <input type="password" placeholder="••••••••" value={loginData.password}
-                  onChange={e => setLoginData({ ...loginData, password: e.target.value })}
-                  className="w-full px-5 py-4 bg-white border-2 border-gray-200 rounded-2xl text-base focus:outline-none focus:border-indigo-500 transition min-h-[56px]"
-                  required />
-              </div>
-              <button type="submit"
-                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-4 rounded-2xl font-bold text-lg tracking-wide shadow-lg hover:shadow-indigo-200 hover:scale-[1.02] transition-all min-h-[60px] mt-2">
-                {t.login} →
-              </button>
-            </form>
+            ) : (
+              <form onSubmit={handleLogin} className="space-y-5">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+                  <input type="email" placeholder="you@example.com" value={loginData.email}
+                    onChange={e => setLoginData({ ...loginData, email: e.target.value })}
+                    className="w-full px-5 py-4 bg-white border-2 border-gray-200 rounded-2xl text-base focus:outline-none focus:border-indigo-500 transition min-h-[56px]"
+                    required />
+                </div>
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="block text-sm font-semibold text-gray-700">{t.password}</label>
+                    <button type="button" onClick={handleForgotPassword}
+                      className="text-xs text-indigo-600 font-semibold hover:underline">
+                      {language === 'es' ? '¿Olvidaste tu contraseña?' : 'Forgot password?'}
+                    </button>
+                  </div>
+                  <input type="password" placeholder="••••••••" value={loginData.password}
+                    onChange={e => setLoginData({ ...loginData, password: e.target.value })}
+                    className="w-full px-5 py-4 bg-white border-2 border-gray-200 rounded-2xl text-base focus:outline-none focus:border-indigo-500 transition min-h-[56px]"
+                    required />
+                </div>
+                <button type="submit"
+                  className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-4 rounded-2xl font-bold text-lg tracking-wide shadow-lg hover:shadow-indigo-200 hover:scale-[1.02] transition-all min-h-[60px] mt-2">
+                  {t.login} →
+                </button>
+              </form>
+            )}
 
             <p className="mt-10 text-center text-xs text-gray-400">
               © {new Date().getFullYear()} D'Rosel Tuxedo Rentals. All rights reserved.
