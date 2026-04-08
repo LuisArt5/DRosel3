@@ -94,7 +94,7 @@ const translations = {
     inventory: 'Inventario', billing: 'Facturación', analytics: 'Análisis',
     users: 'Usuarios', stores: 'Tiendas',
     addCustomer: 'AGREGAR CLIENTE', addItem: 'AGREGAR ARTÍCULO',
-    newRental: 'NUEVO ALQUILER', addUser: 'AGREGAR USUARIO',
+    newRental: 'NUEVA RENTA', addUser: 'AGREGAR USUARIO',
     addStore: 'AGREGAR TIENDA',
     overdueReturns: 'DEVOLUCIONES VENCIDAS',
     todayPickups: 'RECOLECCIONES DE HOY', todayReturns: 'DEVOLUCIONES DE HOY',
