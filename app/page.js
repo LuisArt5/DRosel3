@@ -761,7 +761,7 @@ export default function TuxedoAdmin() {
   // ─── Loading ──────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen text-6xl font-bold bg-gradient-to-br from-indigo-600 to-purple-700 text-white">
+      <div className="flex items-center justify-center h-screen text-6xl font-bold bg-gradient-to-br from-blue-900 to-blue-700 text-white">
         Loading…
       </div>
     );
@@ -772,7 +772,7 @@ export default function TuxedoAdmin() {
     return (
       <div className="flex min-h-screen">
         {/* Left panel — branding */}
-        <div className="hidden lg:flex flex-col justify-between w-1/2 bg-gradient-to-br from-slate-900 via-indigo-950 to-purple-900 p-14 text-white relative overflow-hidden">
+        <div className="hidden lg:flex flex-col justify-between w-1/2 bg-gradient-to-br from-slate-950 via-blue-950 to-blue-900 p-14 text-white relative overflow-hidden">
           {/* Decorative circles */}
           <div style={{ position: 'absolute', top: '-80px', right: '-80px', width: '400px', height: '400px', borderRadius: '50%', background: 'rgba(139,92,246,0.15)' }} />
           <div style={{ position: 'absolute', bottom: '-100px', left: '-60px', width: '350px', height: '350px', borderRadius: '50%', background: 'rgba(99,102,241,0.12)' }} />
@@ -821,7 +821,7 @@ export default function TuxedoAdmin() {
                 </p>
               </div>
               <button onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
-                className="flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-indigo-600 transition px-3 py-2 rounded-xl hover:bg-indigo-50 min-h-[44px]">
+                className="flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-blue-700 transition px-3 py-2 rounded-xl hover:bg-blue-50 min-h-[44px]">
                 <Globe size={16} />
                 {language === 'en' ? 'ES' : 'EN'}
               </button>
@@ -847,7 +847,7 @@ export default function TuxedoAdmin() {
                     : 'Check your inbox and follow the link to reset your password.'}
                 </p>
                 <button onClick={() => { setForgotSent(false); setError(''); }}
-                  className="text-indigo-600 font-semibold text-sm hover:underline">
+                  className="text-blue-700 font-semibold text-sm hover:underline">
                   ← {language === 'es' ? 'Volver al inicio de sesión' : 'Back to sign in'}
                 </button>
               </div>
@@ -857,24 +857,24 @@ export default function TuxedoAdmin() {
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
                   <input type="email" placeholder="you@example.com" value={loginData.email}
                     onChange={e => setLoginData({ ...loginData, email: e.target.value })}
-                    className="w-full px-5 py-4 bg-white border-2 border-gray-200 rounded-2xl text-base focus:outline-none focus:border-indigo-500 transition min-h-[56px]"
+                    className="w-full px-5 py-4 bg-white border-2 border-gray-200 rounded-2xl text-base focus:outline-none focus:border-blue-600 transition min-h-[56px]"
                     required />
                 </div>
                 <div>
                   <div className="flex justify-between items-center mb-2">
                     <label className="block text-sm font-semibold text-gray-700">{t.password}</label>
                     <button type="button" onClick={handleForgotPassword}
-                      className="text-xs text-indigo-600 font-semibold hover:underline">
+                      className="text-xs text-blue-700 font-semibold hover:underline">
                       {language === 'es' ? '¿Olvidaste tu contraseña?' : 'Forgot password?'}
                     </button>
                   </div>
                   <input type="password" placeholder="••••••••" value={loginData.password}
                     onChange={e => setLoginData({ ...loginData, password: e.target.value })}
-                    className="w-full px-5 py-4 bg-white border-2 border-gray-200 rounded-2xl text-base focus:outline-none focus:border-indigo-500 transition min-h-[56px]"
+                    className="w-full px-5 py-4 bg-white border-2 border-gray-200 rounded-2xl text-base focus:outline-none focus:border-blue-600 transition min-h-[56px]"
                     required />
                 </div>
                 <button type="submit"
-                  className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-4 rounded-2xl font-bold text-lg tracking-wide shadow-lg hover:shadow-indigo-200 hover:scale-[1.02] transition-all min-h-[60px] mt-2">
+                  className="w-full bg-gradient-to-r from-blue-900 to-blue-700 hover:from-blue-950 hover:to-blue-800 text-white py-4 rounded-2xl font-bold text-lg tracking-wide shadow-lg hover:shadow-blue-900 hover:scale-[1.02] transition-all min-h-[60px] mt-2">
                   {t.login} →
                 </button>
               </form>
@@ -1151,8 +1151,8 @@ export default function TuxedoAdmin() {
       {/* ── Analytics Print Wrapper ───────────────────────────────────────── */}
       <div id="analytics-print-wrapper">
         <div style={{ fontFamily: 'Arial, sans-serif', fontSize: '12px', color: '#111', padding: '0.25in' }}>
-          <div style={{ borderBottom: '3px solid #4f46e5', paddingBottom: 12, marginBottom: 20 }}>
-            <h1 style={{ fontSize: 26, fontWeight: 'bold', color: '#1e1b4b', margin: 0 }}>D'ROSEL TUXEDO RENTALS — {t.analytics.toUpperCase()}</h1>
+          <div style={{ borderBottom: '3px solid #1e40af', paddingBottom: 12, marginBottom: 20 }}>
+            <h1 style={{ fontSize: 26, fontWeight: 'bold', color: '#1e3a5f', margin: 0 }}>D'ROSEL TUXEDO RENTALS — {t.analytics.toUpperCase()}</h1>
             <p style={{ margin: '4px 0 0', color: '#555', fontSize: 12 }}>
               {t[analyticsFilter]} &nbsp;|&nbsp; {new Date().toLocaleDateString(language === 'es' ? 'es-MX' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
             </p>
@@ -1170,7 +1170,7 @@ export default function TuxedoAdmin() {
             ].map(card => (
               <div key={card.label} style={{ border: '1px solid #e5e7eb', borderRadius: 6, padding: '10px 12px' }}>
                 <div style={{ fontSize: 10, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{card.label}</div>
-                <div style={{ fontSize: 20, fontWeight: 'bold', color: '#1e1b4b', marginTop: 2 }}>{card.value}</div>
+                <div style={{ fontSize: 20, fontWeight: 'bold', color: '#1e3a5f', marginTop: 2 }}>{card.value}</div>
               </div>
             ))}
           </div>
@@ -1238,7 +1238,7 @@ export default function TuxedoAdmin() {
               className="flex items-center gap-2 bg-white text-slate-900 px-5 py-3 rounded-full font-bold hover:bg-gray-100 transition min-h-[48px]">
               <Globe size={20} /> {language === 'en' ? 'ES' : 'EN'}
             </button>
-            <span className="bg-gradient-to-r from-indigo-600 to-purple-700 px-6 py-3 rounded-full font-bold text-base">
+            <span className="bg-gradient-to-r from-blue-900 to-blue-700 px-6 py-3 rounded-full font-bold text-base">
               {profile?.role?.toUpperCase() || 'USER'}
             </span>
             <button onClick={signOut}
@@ -1272,7 +1272,7 @@ export default function TuxedoAdmin() {
                   onClick={() => { setActiveTab(tab.id); setSearchTerm(''); }}
                   className={`flex items-center gap-2 px-6 py-4 rounded-2xl font-bold text-base transition-all whitespace-nowrap min-h-[56px] ${
                     activeTab === tab.id
-                      ? 'bg-gradient-to-r from-indigo-600 to-purple-700 text-white shadow-lg'
+                      ? 'bg-gradient-to-r from-blue-900 to-blue-700 text-white shadow-lg'
                       : 'bg-gray-100 hover:bg-gray-200'
                   }`}>
                   <Icon size={20} /> {tab.label}
@@ -1292,10 +1292,10 @@ export default function TuxedoAdmin() {
             {/* Summary cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               {[
-                { label: t.todayPickups, value: todayPickups.length, color: 'from-indigo-500 to-indigo-700' },
-                { label: t.todayReturns, value: todayReturns.length, color: 'from-violet-500 to-violet-700' },
+                { label: t.todayPickups, value: todayPickups.length, color: 'from-blue-700 to-blue-900' },
+                { label: t.todayReturns, value: todayReturns.length, color: 'from-blue-600 to-blue-800' },
                 { label: t.overdueReturns, value: overdue.length, color: 'from-rose-500 to-rose-700' },
-                { label: t.outstanding, value: `$${totalOutstanding.toFixed(0)}`, color: 'from-purple-500 to-purple-700' },
+                { label: t.outstanding, value: `$${totalOutstanding.toFixed(0)}`, color: 'from-sky-600 to-blue-700' },
               ].map(card => (
                 <div key={card.label} className={`bg-gradient-to-r ${card.color} text-white rounded-3xl p-6 shadow-xl`}>
                   <div className="text-5xl font-bold">{card.value}</div>
@@ -1336,17 +1336,17 @@ export default function TuxedoAdmin() {
 
             {/* Today's Reservations */}
             {todayReservations.length > 0 && (
-              <div className="bg-purple-50 border-4 border-purple-500 rounded-3xl p-8">
-                <h2 className="text-3xl font-bold text-purple-800 flex items-center gap-4 mb-6">
+              <div className="bg-sky-50 border-4 border-sky-400 rounded-3xl p-8">
+                <h2 className="text-3xl font-bold text-blue-800 flex items-center gap-4 mb-6">
                   <FileText size={40} /> {t.todayReservations} ({todayReservations.length})
                 </h2>
                 {todayReservations.map(r => (
                   <div key={r.id} className="bg-white p-6 rounded-2xl mb-4 shadow-lg flex justify-between items-center">
                     <div>
                       <p className="text-2xl font-bold">{r.customers?.name}</p>
-                      <p className="text-lg text-purple-600">{t.pickupDate}: {r.pickup_date} · {t.eventDate}: {r.event_date || '—'}</p>
+                      <p className="text-lg text-blue-600">{t.pickupDate}: {r.pickup_date} · {t.eventDate}: {r.event_date || '—'}</p>
                       <p className="text-base text-gray-500">{r.item_ids?.length} {t.items} · ${r.total?.toFixed(2)} · {t.deposit}: ${r.deposit?.toFixed(2)}</p>
-                      {currentStoreId === 'all' && <p className="text-sm text-indigo-600">{getStoreName(r.store_id)}</p>}
+                      {currentStoreId === 'all' && <p className="text-sm text-blue-700">{getStoreName(r.store_id)}</p>}
                     </div>
                     <button onClick={() => printContract(r)}
                       className="bg-gray-200 text-gray-700 px-6 py-5 rounded-2xl hover:bg-gray-300 min-h-[56px] flex items-center gap-2 font-bold">
@@ -1359,22 +1359,22 @@ export default function TuxedoAdmin() {
 
             {/* Today's Pickups */}
             {todayPickups.length > 0 && (
-              <div className="bg-violet-50 border-4 border-violet-400 rounded-3xl p-8">
-                <h2 className="text-3xl font-bold text-violet-800 flex items-center gap-4 mb-6">
+              <div className="bg-blue-50 border-4 border-blue-500 rounded-3xl p-8">
+                <h2 className="text-3xl font-bold text-blue-800 flex items-center gap-4 mb-6">
                   <Calendar size={40} /> {t.todayPickups} ({todayPickups.length})
                 </h2>
                 {todayPickups.map(r => (
                   <div key={r.id} className="bg-white p-6 rounded-2xl mb-4 shadow-lg flex justify-between items-center">
                     <div>
                       <p className="text-2xl font-bold">{r.customers?.name}</p>
-                      <p className="text-lg text-violet-600">{t.eventDate}: {r.event_date || '—'}</p>
+                      <p className="text-lg text-blue-600">{t.eventDate}: {r.event_date || '—'}</p>
                       <p className="text-base text-gray-500">{r.item_ids?.length} {t.items} · ${r.total?.toFixed(2)}</p>
-                      {currentStoreId === 'all' && <p className="text-sm text-indigo-600">{getStoreName(r.store_id)}</p>}
+                      {currentStoreId === 'all' && <p className="text-sm text-blue-700">{getStoreName(r.store_id)}</p>}
                     </div>
                     <div className="flex gap-3">
                       {hasPermission('edit') && (
                         <button onClick={() => handlePickup(r.id)}
-                          className="bg-indigo-600 text-white px-8 py-5 rounded-2xl font-bold text-xl hover:bg-indigo-700 min-h-[56px]">
+                          className="bg-blue-800 text-white px-8 py-5 rounded-2xl font-bold text-xl hover:bg-blue-900 min-h-[56px]">
                           {t.markPickedUp}
                         </button>
                       )}
@@ -1390,20 +1390,20 @@ export default function TuxedoAdmin() {
 
             {/* Today's Returns */}
             {todayReturns.length > 0 && (
-              <div className="bg-purple-50 border-4 border-purple-400 rounded-3xl p-8">
-                <h2 className="text-3xl font-bold text-purple-800 flex items-center gap-4 mb-6">
+              <div className="bg-blue-50 border-4 border-blue-400 rounded-3xl p-8">
+                <h2 className="text-3xl font-bold text-blue-800 flex items-center gap-4 mb-6">
                   <CheckCircle size={40} /> {t.todayReturns} ({todayReturns.length})
                 </h2>
                 {todayReturns.map(r => (
                   <div key={r.id} className="bg-white p-6 rounded-2xl mb-4 shadow-lg flex justify-between items-center">
                     <div>
                       <p className="text-2xl font-bold">{r.customers?.name}</p>
-                      <p className="text-lg text-purple-600">{t.returnDate}: {r.return_date}</p>
+                      <p className="text-lg text-blue-600">{t.returnDate}: {r.return_date}</p>
                       <p className="text-base text-gray-500">${getRentalBalance(r).toFixed(2)} {t.balance}</p>
                     </div>
                     {hasPermission('edit') && (
                       <button onClick={() => handleCheckIn(r.id)}
-                        className="bg-indigo-600 text-white px-8 py-5 rounded-2xl font-bold text-xl hover:bg-indigo-700 min-h-[56px]">
+                        className="bg-blue-800 text-white px-8 py-5 rounded-2xl font-bold text-xl hover:bg-blue-900 min-h-[56px]">
                         {t.checkInNow}
                       </button>
                     )}
@@ -1414,7 +1414,7 @@ export default function TuxedoAdmin() {
 
             {todayReservations.length === 0 && todayPickups.length === 0 && todayReturns.length === 0 && overdue.length === 0 && (
               <div className="text-center py-20 text-gray-400 text-3xl">
-                <CheckCircle size={80} className="mx-auto mb-6 text-indigo-300" />
+                <CheckCircle size={80} className="mx-auto mb-6 text-blue-300" />
                 {language === 'es' ? 'Todo está al día hoy.' : "You're all caught up for today!"}
               </div>
             )}
@@ -1432,7 +1432,7 @@ export default function TuxedoAdmin() {
                   className="px-6 py-4 border-2 rounded-2xl text-lg min-h-[56px] w-60" />
                 {hasPermission('edit') && (
                   <button onClick={() => openModal('rental')}
-                    className="flex items-center gap-3 bg-gradient-to-r from-indigo-600 to-purple-700 text-white px-8 py-4 rounded-2xl font-bold text-xl hover:scale-105 transition min-h-[56px]">
+                    className="flex items-center gap-3 bg-gradient-to-r from-blue-900 to-blue-700 text-white px-8 py-4 rounded-2xl font-bold text-xl hover:scale-105 transition min-h-[56px]">
                     <Plus size={28} /> {t.newRental}
                   </button>
                 )}
@@ -1440,7 +1440,7 @@ export default function TuxedoAdmin() {
             </div>
             <div className="bg-white rounded-3xl shadow-xl overflow-x-auto">
               <table className="w-full text-base">
-                <thead className="bg-gradient-to-r from-indigo-600 to-purple-700 text-white">
+                <thead className="bg-gradient-to-r from-blue-900 to-blue-700 text-white">
                   <tr>
                     <th className="px-6 py-5 text-left font-bold">{t.customer}</th>
                     <th className="px-6 py-5 text-left font-bold">{t.eventDate}</th>
@@ -1464,8 +1464,8 @@ export default function TuxedoAdmin() {
                         <td className="px-6 py-5">{r.return_date}</td>
                         <td className="px-6 py-5">
                           <span className={`px-3 py-1 rounded-full text-sm font-bold ${
-                            r.status === 'reserved' ? 'bg-indigo-100 text-indigo-700' :
-                            r.status === 'picked_up' ? 'bg-violet-100 text-violet-700' :
+                            r.status === 'reserved' ? 'bg-blue-100 text-blue-800' :
+                            r.status === 'picked_up' ? 'bg-sky-100 text-sky-700' :
                             r.status === 'returned' ? 'bg-slate-100 text-slate-600' :
                             'bg-gray-100 text-gray-800'}`}>
                             {t[r.status] || r.status}
@@ -1477,12 +1477,12 @@ export default function TuxedoAdmin() {
                             ${balance.toFixed(2)}
                           </span>
                         </td>
-                        {currentStoreId === 'all' && <td className="px-6 py-5 text-sm text-indigo-600">{getStoreName(r.store_id)}</td>}
+                        {currentStoreId === 'all' && <td className="px-6 py-5 text-sm text-blue-700">{getStoreName(r.store_id)}</td>}
                         <td className="px-6 py-5">
                           <div className="flex gap-2 flex-wrap">
                             {hasPermission('edit') && balance > 0 && (
                               <button onClick={() => { setQuickPayRental(r); setQuickPayMethod('cash'); }}
-                                className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-3 rounded-xl font-bold hover:bg-indigo-700 min-h-[48px] text-sm">
+                                className="flex items-center gap-2 bg-blue-800 text-white px-4 py-3 rounded-xl font-bold hover:bg-blue-900 min-h-[48px] text-sm">
                                 <CreditCard size={16} /> {t.payBalance}
                               </button>
                             )}
@@ -1492,7 +1492,7 @@ export default function TuxedoAdmin() {
                             </button>
                             {hasPermission('edit') && (
                               <button onClick={() => openModal('rental', r)}
-                                className="text-indigo-600 p-3 rounded-xl hover:bg-indigo-50 min-h-[48px] min-w-[48px] flex items-center justify-center">
+                                className="text-blue-700 p-3 rounded-xl hover:bg-blue-50 min-h-[48px] min-w-[48px] flex items-center justify-center">
                                 <Edit2 size={22} />
                               </button>
                             )}
@@ -1527,7 +1527,7 @@ export default function TuxedoAdmin() {
                   className="px-6 py-4 border-2 rounded-2xl text-lg min-h-[56px] w-60" />
                 {hasPermission('edit') && (
                   <button onClick={() => openModal('customer')}
-                    className="flex items-center gap-3 bg-gradient-to-r from-indigo-600 to-purple-700 text-white px-8 py-4 rounded-2xl font-bold text-xl hover:scale-105 transition min-h-[56px]">
+                    className="flex items-center gap-3 bg-gradient-to-r from-blue-900 to-blue-700 text-white px-8 py-4 rounded-2xl font-bold text-xl hover:scale-105 transition min-h-[56px]">
                     <Plus size={28} /> {t.addCustomer}
                   </button>
                 )}
@@ -1535,7 +1535,7 @@ export default function TuxedoAdmin() {
             </div>
             <div className="bg-white rounded-3xl shadow-xl overflow-x-auto">
               <table className="w-full text-base">
-                <thead className="bg-gradient-to-r from-indigo-600 to-purple-700 text-white">
+                <thead className="bg-gradient-to-r from-blue-900 to-blue-700 text-white">
                   <tr>
                     <th className="px-6 py-5 text-left font-bold">{t.name}</th>
                     <th className="px-6 py-5 text-left font-bold">{t.phone}</th>
@@ -1558,7 +1558,7 @@ export default function TuxedoAdmin() {
                         <td className="px-6 py-5 text-sm max-w-[160px] truncate">{c.address || '—'}</td>
                         <td className="px-6 py-5 text-sm">
                           {hasMeasurements ? (
-                            <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-xs font-bold">
+                            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-bold">
                               {[m.jacketSize && `J:${m.jacketSize}`, m.waist && `W:${m.waist}`, m.inseam && `I:${m.inseam}`].filter(Boolean).join(' · ')}
                             </span>
                           ) : '—'}
@@ -1566,7 +1566,7 @@ export default function TuxedoAdmin() {
                         <td className="px-6 py-5">
                           {c.id_photo_url ? (
                             <button onClick={() => window.open(c.id_photo_url)}
-                              className="text-indigo-600 hover:underline flex items-center gap-2 min-h-[48px]">
+                              className="text-blue-700 hover:underline flex items-center gap-2 min-h-[48px]">
                               <Eye size={20} /> {t.viewId}
                             </button>
                           ) : '—'}
@@ -1575,7 +1575,7 @@ export default function TuxedoAdmin() {
                           <div className="flex gap-2">
                             {hasPermission('edit') && (
                               <button onClick={() => openModal('customer', { ...c, ...(c.measurements || {}) })}
-                                className="text-indigo-600 p-3 rounded-xl hover:bg-indigo-50 min-h-[48px] min-w-[48px] flex items-center justify-center">
+                                className="text-blue-700 p-3 rounded-xl hover:bg-blue-50 min-h-[48px] min-w-[48px] flex items-center justify-center">
                                 <Edit2 size={22} />
                               </button>
                             )}
@@ -1610,7 +1610,7 @@ export default function TuxedoAdmin() {
                   className="px-6 py-4 border-2 rounded-2xl text-lg min-h-[56px] w-60" />
                 {hasPermission('edit') && (
                   <button onClick={() => openModal('inventory')}
-                    className="flex items-center gap-3 bg-gradient-to-r from-indigo-600 to-purple-700 text-white px-8 py-4 rounded-2xl font-bold text-xl hover:scale-105 transition min-h-[56px]">
+                    className="flex items-center gap-3 bg-gradient-to-r from-blue-900 to-blue-700 text-white px-8 py-4 rounded-2xl font-bold text-xl hover:scale-105 transition min-h-[56px]">
                     <Plus size={28} /> {t.addItem}
                   </button>
                 )}
@@ -1651,8 +1651,8 @@ export default function TuxedoAdmin() {
                     <h3 className="text-2xl font-bold leading-tight">{item.name}</h3>
                     <span className={`px-3 py-1 rounded-full text-sm font-bold ml-2 flex-shrink-0 ${
                       item.status === 'available' ? 'bg-slate-100 text-slate-600' :
-                      item.status === 'rented' ? 'bg-violet-100 text-violet-700' :
-                      item.status === 'cleaning' ? 'bg-indigo-100 text-indigo-700' :
+                      item.status === 'rented' ? 'bg-sky-100 text-sky-700' :
+                      item.status === 'cleaning' ? 'bg-blue-100 text-blue-800' :
                       'bg-red-100 text-red-800'}`}>
                       {t[item.status] || item.status}
                     </span>
@@ -1662,12 +1662,12 @@ export default function TuxedoAdmin() {
                   <p className="text-gray-500 text-sm mb-1">RFID: {item.rfid || '—'}</p>
                   <p className="text-3xl font-bold text-blue-700 my-3">${item.price}</p>
                   {currentStoreId === 'all' && (
-                    <p className="text-xs text-purple-600 mb-3">{getStoreName(item.store_id)}</p>
+                    <p className="text-xs text-blue-600 mb-3">{getStoreName(item.store_id)}</p>
                   )}
                   {hasPermission('edit') && (
                     <div className="flex gap-2 mt-4">
                       <button onClick={() => openModal('inventory', item)}
-                        className="flex-1 bg-indigo-600 text-white px-4 py-4 rounded-2xl font-bold hover:bg-indigo-700 min-h-[56px]">
+                        className="flex-1 bg-blue-800 text-white px-4 py-4 rounded-2xl font-bold hover:bg-blue-900 min-h-[56px]">
                         {t.edit}
                       </button>
                       {hasPermission('delete') && (
@@ -1695,8 +1695,8 @@ export default function TuxedoAdmin() {
             {/* Summary Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               {[
-                { label: t.totalRevenue, value: `$${totalRevenue.toFixed(2)}`, color: 'from-indigo-500 to-indigo-700' },
-                { label: t.totalCollected, value: `$${totalCollected.toFixed(2)}`, color: 'from-violet-500 to-violet-700' },
+                { label: t.totalRevenue, value: `$${totalRevenue.toFixed(2)}`, color: 'from-blue-700 to-blue-900' },
+                { label: t.totalCollected, value: `$${totalCollected.toFixed(2)}`, color: 'from-blue-600 to-blue-800' },
                 { label: t.totalOutstanding, value: `$${totalOutstanding.toFixed(2)}`, color: 'from-rose-500 to-rose-700' },
               ].map(c => (
                 <div key={c.label} className={`bg-gradient-to-r ${c.color} text-white rounded-3xl p-8 shadow-xl`}>
@@ -1741,7 +1741,7 @@ export default function TuxedoAdmin() {
                   </div>
                   <button
                     onClick={() => billingRentalId && billingAmount && addPayment(billingRentalId, billingAmount, billingMethod)}
-                    className="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-bold text-xl hover:bg-indigo-700 min-h-[56px]">
+                    className="bg-blue-800 text-white px-8 py-4 rounded-2xl font-bold text-xl hover:bg-blue-900 min-h-[56px]">
                     <CreditCard size={22} className="inline mr-2" /> {t.addPayment}
                   </button>
                 </div>
@@ -1778,8 +1778,8 @@ export default function TuxedoAdmin() {
                         <td className="px-6 py-5 font-bold text-rose-600">${bal.toFixed(2)}</td>
                         <td className="px-6 py-5">
                           <span className={`px-3 py-1 rounded-full text-sm font-bold ${
-                            r.status === 'reserved' ? 'bg-indigo-100 text-indigo-700' :
-                            r.status === 'picked_up' ? 'bg-violet-100 text-violet-700' :
+                            r.status === 'reserved' ? 'bg-blue-100 text-blue-800' :
+                            r.status === 'picked_up' ? 'bg-sky-100 text-sky-700' :
                             r.status === 'returned' ? 'bg-slate-100 text-slate-600' :
                             'bg-gray-100 text-gray-800'}`}>
                             {t[r.status] || r.status}
@@ -1797,7 +1797,7 @@ export default function TuxedoAdmin() {
 
             {/* Recent Payments */}
             <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
-              <div className="px-8 py-6 bg-gradient-to-r from-indigo-600 to-purple-700 text-white">
+              <div className="px-8 py-6 bg-gradient-to-r from-blue-900 to-blue-700 text-white">
                 <h3 className="text-2xl font-bold">{t.recentPayments}</h3>
               </div>
               <table className="w-full text-base">
@@ -1839,12 +1839,12 @@ export default function TuxedoAdmin() {
                 {[['thisWeek', t.thisWeek], ['thisMonth', t.thisMonth], ['thisYear', t.thisYear], ['allTime', t.allTime]].map(([val, label]) => (
                   <button key={val} onClick={() => setAnalyticsFilter(val)}
                     className={`px-6 py-3 rounded-2xl font-bold text-base min-h-[48px] transition ${
-                      analyticsFilter === val ? 'bg-indigo-600 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}>
+                      analyticsFilter === val ? 'bg-blue-900 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}>
                     {label}
                   </button>
                 ))}
                 <button onClick={handlePrintAnalytics}
-                  className="px-6 py-3 rounded-2xl font-bold text-base min-h-[48px] bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:opacity-90 transition flex items-center gap-2">
+                  className="px-6 py-3 rounded-2xl font-bold text-base min-h-[48px] bg-gradient-to-r from-blue-900 to-blue-700 text-white hover:opacity-90 transition flex items-center gap-2">
                   <Printer size={20} /> {t.printReport}
                 </button>
               </div>
@@ -1859,7 +1859,7 @@ export default function TuxedoAdmin() {
                 { label: t.outstanding, value: `$${totalOutstanding.toFixed(0)}`, icon: AlertCircle, color: 'orange' },
               ].map(card => {
                 const Icon = card.icon;
-                const colorMap = { blue: 'from-indigo-600 to-indigo-800', green: 'from-violet-600 to-violet-800', purple: 'from-purple-600 to-purple-800', orange: 'from-rose-600 to-rose-700' };
+                const colorMap = { blue: 'from-blue-800 to-blue-900', green: 'from-blue-700 to-blue-500', purple: 'from-sky-700 to-blue-800', orange: 'from-rose-600 to-rose-700' };
                 return (
                   <div key={card.label} className={`bg-gradient-to-r ${colorMap[card.color]} text-white rounded-3xl p-6 shadow-xl`}>
                     <Icon size={36} className="mb-3 opacity-80" />
@@ -1873,9 +1873,9 @@ export default function TuxedoAdmin() {
             {/* Operational KPI Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               {[
-                { label: t.utilizationRate, value: getUtilizationRate(), icon: Package, color: 'from-indigo-500 to-indigo-700', tip: language === 'es' ? '% del inventario actualmente fuera' : '% of inventory currently out' },
-                { label: t.collectionRate, value: getCollectionRate(), icon: CreditCard, color: 'from-violet-500 to-violet-700', tip: language === 'es' ? '% del total facturado cobrado' : '% of billed revenue collected' },
-                { label: t.avgDuration, value: `${getAvgRentalDuration()} ${language === 'es' ? 'días' : 'days'}`, icon: Clock, color: 'from-purple-500 to-purple-700', tip: language === 'es' ? 'Días promedio por renta' : 'Avg days per rental' },
+                { label: t.utilizationRate, value: getUtilizationRate(), icon: Package, color: 'from-blue-700 to-blue-900', tip: language === 'es' ? '% del inventario actualmente fuera' : '% of inventory currently out' },
+                { label: t.collectionRate, value: getCollectionRate(), icon: CreditCard, color: 'from-blue-600 to-blue-800', tip: language === 'es' ? '% del total facturado cobrado' : '% of billed revenue collected' },
+                { label: t.avgDuration, value: `${getAvgRentalDuration()} ${language === 'es' ? 'días' : 'days'}`, icon: Clock, color: 'from-sky-600 to-blue-700', tip: language === 'es' ? 'Días promedio por renta' : 'Avg days per rental' },
                 { label: t.lateReturnRate, value: getLateReturnRate(), icon: AlertCircle, color: 'from-rose-500 to-rose-700', tip: language === 'es' ? '% de rentas devueltas tarde' : '% of rentals returned late' },
               ].map(card => {
                 const Icon = card.icon;
@@ -2032,7 +2032,7 @@ export default function TuxedoAdmin() {
             {/* Top Customers + Overdue */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
-                <div className="px-8 py-6 bg-gradient-to-r from-indigo-600 to-purple-700 text-white">
+                <div className="px-8 py-6 bg-gradient-to-r from-blue-900 to-blue-700 text-white">
                   <h3 className="text-2xl font-bold flex items-center gap-3"><Award size={28} /> {t.topCustomers}</h3>
                 </div>
                 <table className="w-full text-base">
@@ -2091,7 +2091,7 @@ export default function TuxedoAdmin() {
           <div>
             <div className="flex justify-between items-center mb-8 gap-4 flex-wrap">
               <h2 className="text-4xl font-bold">{t.cleaningTracker}</h2>
-              <div className="bg-gradient-to-r from-indigo-600 to-purple-700 text-white rounded-2xl px-8 py-4 text-xl font-bold">
+              <div className="bg-gradient-to-r from-blue-900 to-blue-700 text-white rounded-2xl px-8 py-4 text-xl font-bold">
                 {inventory.filter(i => i.status === 'cleaning').length} {t.atCleaner}
               </div>
             </div>
@@ -2104,7 +2104,7 @@ export default function TuxedoAdmin() {
             ) : (
               <div className="bg-white rounded-3xl shadow-xl overflow-x-auto">
                 <table className="w-full text-base">
-                  <thead className="bg-gradient-to-r from-indigo-600 to-purple-700 text-white">
+                  <thead className="bg-gradient-to-r from-blue-900 to-blue-700 text-white">
                     <tr>
                       <th className="px-6 py-5 text-left font-bold">{t.item}</th>
                       <th className="px-6 py-5 text-left font-bold">{t.size}</th>
@@ -2121,7 +2121,7 @@ export default function TuxedoAdmin() {
                         r.item_ids?.includes(item.id) && r.status === 'returned'
                       );
                       return (
-                        <tr key={item.id} className="border-b hover:bg-indigo-50">
+                        <tr key={item.id} className="border-b hover:bg-blue-50">
                           <td className="px-6 py-5 font-bold">{item.name}</td>
                           <td className="px-6 py-5">{item.size}</td>
                           <td className="px-6 py-5">{item.category || '—'}</td>
@@ -2140,7 +2140,7 @@ export default function TuxedoAdmin() {
                           <td className="px-6 py-5">
                             {hasPermission('edit') && (
                               <button onClick={() => markCleaningReturned(item.id)}
-                                className="bg-indigo-600 text-white px-5 py-3 rounded-2xl font-bold hover:bg-indigo-700 min-h-[48px]">
+                                className="bg-blue-800 text-white px-5 py-3 rounded-2xl font-bold hover:bg-blue-900 min-h-[48px]">
                                 {t.markReturned}
                               </button>
                             )}
@@ -2161,7 +2161,7 @@ export default function TuxedoAdmin() {
             <div className="flex justify-between items-center mb-8 gap-4">
               <h2 className="text-4xl font-bold">{t.storeManagement}</h2>
               <button onClick={() => openModal('store')}
-                className="flex items-center gap-3 bg-gradient-to-r from-indigo-600 to-purple-700 text-white px-8 py-4 rounded-2xl font-bold text-xl hover:scale-105 transition min-h-[56px]">
+                className="flex items-center gap-3 bg-gradient-to-r from-blue-900 to-blue-700 text-white px-8 py-4 rounded-2xl font-bold text-xl hover:scale-105 transition min-h-[56px]">
                 <Plus size={28} /> {t.addStore}
               </button>
             </div>
@@ -2184,7 +2184,7 @@ export default function TuxedoAdmin() {
                   )}
                   <div className="flex gap-2">
                     <button onClick={() => openModal('store', store)}
-                      className="flex-1 bg-indigo-600 text-white px-4 py-4 rounded-2xl font-bold hover:bg-indigo-700 min-h-[56px]">
+                      className="flex-1 bg-blue-800 text-white px-4 py-4 rounded-2xl font-bold hover:bg-blue-900 min-h-[56px]">
                       {t.edit}
                     </button>
                     <button onClick={() => deleteItem('stores', store.id)}
@@ -2214,14 +2214,14 @@ export default function TuxedoAdmin() {
                   onChange={e => setSearchTerm(e.target.value)}
                   className="px-6 py-4 border-2 rounded-2xl text-lg min-h-[56px] w-60" />
                 <button onClick={() => openModal('user')}
-                  className="flex items-center gap-3 bg-gradient-to-r from-indigo-600 to-purple-700 text-white px-8 py-4 rounded-2xl font-bold text-xl hover:scale-105 transition min-h-[56px]">
+                  className="flex items-center gap-3 bg-gradient-to-r from-blue-900 to-blue-700 text-white px-8 py-4 rounded-2xl font-bold text-xl hover:scale-105 transition min-h-[56px]">
                   <Plus size={28} /> {t.addUser}
                 </button>
               </div>
             </div>
             <div className="bg-white rounded-3xl shadow-xl overflow-x-auto">
               <table className="w-full text-base">
-                <thead className="bg-gradient-to-r from-indigo-600 to-purple-700 text-white">
+                <thead className="bg-gradient-to-r from-blue-900 to-blue-700 text-white">
                   <tr>
                     <th className="px-6 py-5 text-left font-bold">{t.email}</th>
                     <th className="px-6 py-5 text-left font-bold">{t.role}</th>
@@ -2235,8 +2235,8 @@ export default function TuxedoAdmin() {
                       <td className="px-6 py-5 font-bold">{u.email}</td>
                       <td className="px-6 py-5">
                         <span className={`px-3 py-1 rounded-full text-sm font-bold ${
-                          u.role === 'admin' ? 'bg-purple-100 text-purple-800' :
-                          u.role === 'staff' ? 'bg-violet-100 text-violet-700' :
+                          u.role === 'admin' ? 'bg-blue-100 text-blue-800' :
+                          u.role === 'staff' ? 'bg-sky-100 text-sky-700' :
                           'bg-gray-100 text-gray-800'}`}>
                           {t[u.role] || u.role}
                         </span>
@@ -2245,7 +2245,7 @@ export default function TuxedoAdmin() {
                       <td className="px-6 py-5">
                         <div className="flex gap-2">
                           <button onClick={() => openModal('user', u)}
-                            className="text-indigo-600 p-3 rounded-xl hover:bg-indigo-50 min-h-[48px] min-w-[48px] flex items-center justify-center">
+                            className="text-blue-700 p-3 rounded-xl hover:bg-blue-50 min-h-[48px] min-w-[48px] flex items-center justify-center">
                             <Edit2 size={22} />
                           </button>
                           {u.id !== user.id && (
@@ -2666,7 +2666,7 @@ export default function TuxedoAdmin() {
                           className="px-4 py-3 border-2 rounded-xl text-base min-h-[52px]" />
                       </div>
                       <button type="button" onClick={saveAlteration}
-                        className="mt-3 w-full bg-purple-600 text-white px-6 py-4 rounded-2xl font-bold text-lg hover:bg-purple-700 min-h-[56px]">
+                        className="mt-3 w-full bg-blue-800 text-white px-6 py-4 rounded-2xl font-bold text-lg hover:bg-blue-900 min-h-[56px]">
                         {t.addAlteration}
                       </button>
                     </div>
@@ -2675,7 +2675,7 @@ export default function TuxedoAdmin() {
               )}
 
               <button type="submit"
-                className="w-full bg-gradient-to-r from-indigo-600 to-purple-700 text-white py-6 rounded-2xl font-bold text-2xl hover:scale-105 transition min-h-[64px] sticky bottom-0">
+                className="w-full bg-gradient-to-r from-blue-900 to-blue-700 text-white py-6 rounded-2xl font-bold text-2xl hover:scale-105 transition min-h-[64px] sticky bottom-0">
                 <Save size={28} className="inline mr-3" /> {t.save}
               </button>
             </form>
