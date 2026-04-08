@@ -583,7 +583,12 @@ export default function TuxedoAdmin() {
   // ─── Contract Printing ────────────────────────────────────────────────────
   const printContract = (rental) => {
     setContractRental(rental);
-    setTimeout(() => window.print(), 200);
+    setTimeout(() => {
+      document.body.classList.add('print-contract');
+      const cleanup = () => { document.body.classList.remove('print-contract'); window.removeEventListener('afterprint', cleanup); };
+      window.addEventListener('afterprint', cleanup);
+      window.print();
+    }, 200);
   };
 
   // ─── Helpers ──────────────────────────────────────────────────────────────
@@ -747,6 +752,9 @@ export default function TuxedoAdmin() {
   };
 
   const handlePrintAnalytics = () => {
+    document.body.classList.add('print-analytics');
+    const cleanup = () => { document.body.classList.remove('print-analytics'); window.removeEventListener('afterprint', cleanup); };
+    window.addEventListener('afterprint', cleanup);
     window.print();
   };
 
@@ -909,14 +917,13 @@ export default function TuxedoAdmin() {
 
       {/* ── Print CSS ─────────────────────────────────────────────────────── */}
       <style>{`
-        @media print {
-          body > div > *:not(#contract-print-wrapper):not(#analytics-print-wrapper) { display: none !important; }
-          #contract-print-wrapper { display: block !important; position: static; width: 100%; background: white; }
-          #analytics-print-wrapper { display: block !important; position: static; width: 100%; background: white; }
-        }
         #contract-print-wrapper { display: none; }
         #analytics-print-wrapper { display: none; }
-        .analytics-printing #analytics-print-wrapper { display: block !important; }
+        @media print {
+          body > div > * { display: none !important; }
+          body.print-contract > div > #contract-print-wrapper { display: block !important; position: static; width: 100%; background: white; }
+          body.print-analytics > div > #analytics-print-wrapper { display: block !important; position: static; width: 100%; background: white; }
+        }
         @page { margin: 0.4in; }
       `}</style>
 

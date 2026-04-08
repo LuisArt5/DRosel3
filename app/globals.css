@@ -4,12 +4,11 @@
 * { -webkit-tap-highlight-color: transparent; }
 button, select, input, textarea { touch-action: manipulation; }
 
-/* Print: show contract or analytics report, hide everything else */
+/* Print: body class controls which wrapper is shown */
 @media print {
-  body > div > *:not(#contract-print-wrapper):not(#analytics-print-wrapper) { display: none !important; }
-  #contract-print-wrapper { display: block !important; position: static !important; }
-  #analytics-print-wrapper { display: block !important; position: static !important; }
-  @page { margin: 0.5in; size: letter; }
+  body > div > * { display: none !important; }
+  body.print-contract > div > #contract-print-wrapper { display: block !important; position: static !important; }
+  body.print-analytics > div > #analytics-print-wrapper { display: block !important; position: static !important; }
 }
 
 :root {
