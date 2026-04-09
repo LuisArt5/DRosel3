@@ -202,13 +202,6 @@ export default function TuxedoAdmin() {
     if (user) loadData(currentStoreId);
   }, [currentStoreId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [darkMode]);
 
   // ─── Auth ──────────────────────────────────────────────────────────────────
   const checkUser = async () => {
@@ -924,7 +917,7 @@ export default function TuxedoAdmin() {
 
   // ─── Render ───────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen flex bg-gray-50">
+    <div className={`min-h-screen flex bg-gray-50${darkMode ? ' dark' : ''}`}>
 
       {/* ── Print CSS ─────────────────────────────────────────────────────── */}
       <style>{`
