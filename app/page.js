@@ -1220,14 +1220,14 @@ export default function TuxedoAdmin() {
 
       {/* ── Header ────────────────────────────────────────────────────────── */}
       <header className="bg-slate-900 text-white shadow-2xl sticky top-0 z-40">
-        <div className="max-w-full px-6 py-4 flex justify-between items-center gap-4">
-          <h1 className="text-3xl font-bold whitespace-nowrap">D'Rosel Tuxedo Rentals</h1>
-          <div className="flex items-center gap-3 flex-wrap justify-end">
+        <div className="max-w-full px-3 md:px-6 py-3 md:py-4 flex justify-between items-center gap-2 md:gap-4">
+          <h1 className="text-lg md:text-3xl font-bold whitespace-nowrap">D'Rosel</h1>
+          <div className="flex items-center gap-2 md:gap-3 flex-wrap justify-end">
             {/* Store Selector */}
             <select
               value={currentStoreId}
               onChange={e => { setCurrentStoreId(e.target.value); setSearchTerm(''); }}
-              className="bg-white text-slate-900 px-4 py-3 rounded-full font-bold text-base min-h-[48px] cursor-pointer"
+              className="bg-white text-slate-900 px-2 md:px-4 py-2 md:py-3 rounded-full font-bold text-sm md:text-base min-h-[40px] md:min-h-[48px] cursor-pointer max-w-[120px] md:max-w-none"
             >
               {profile?.role === 'admin' && <option value="all">{t.allStores}</option>}
               {stores.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -1235,24 +1235,24 @@ export default function TuxedoAdmin() {
             </select>
             {/* Language */}
             <button onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
-              className="flex items-center gap-2 bg-white text-slate-900 px-5 py-3 rounded-full font-bold hover:bg-gray-100 transition min-h-[48px]">
-              <Globe size={20} /> {language === 'en' ? 'ES' : 'EN'}
+              className="flex items-center gap-1 bg-white text-slate-900 px-3 md:px-5 py-2 md:py-3 rounded-full font-bold hover:bg-gray-100 transition min-h-[40px] md:min-h-[48px] text-sm md:text-base">
+              <Globe size={16} /> {language === 'en' ? 'ES' : 'EN'}
             </button>
-            <span className="bg-gradient-to-r from-blue-900 to-blue-700 px-6 py-3 rounded-full font-bold text-base">
+            <span className="hidden md:inline bg-gradient-to-r from-blue-900 to-blue-700 px-6 py-3 rounded-full font-bold text-base">
               {profile?.role?.toUpperCase() || 'USER'}
             </span>
             <button onClick={signOut}
-              className="flex items-center gap-2 bg-red-600 px-6 py-3 rounded-2xl hover:bg-red-700 transition font-bold text-base min-h-[48px]">
-              <LogOut size={20} /> {t.logout}
+              className="flex items-center gap-1 bg-red-600 px-3 md:px-6 py-2 md:py-3 rounded-2xl hover:bg-red-700 transition font-bold text-sm md:text-base min-h-[40px] md:min-h-[48px]">
+              <LogOut size={18} /> <span className="hidden md:inline">{t.logout}</span>
             </button>
           </div>
         </div>
       </header>
 
       {/* ── Navigation ────────────────────────────────────────────────────── */}
-      <nav className="bg-white shadow-xl sticky top-[73px] z-30">
-        <div className="max-w-full px-4 py-3">
-          <div className="flex gap-2 overflow-x-auto">
+      <nav className="bg-white shadow-xl sticky top-[57px] md:top-[73px] z-30">
+        <div className="max-w-full px-2 md:px-4 py-2 md:py-3">
+          <div className="flex gap-1 md:gap-2 overflow-x-auto pb-1">
             {[
               { id: 'dashboard', label: t.dashboard, icon: Clock },
               { id: 'rentals', label: t.rentals, icon: Calendar },
@@ -1270,12 +1270,12 @@ export default function TuxedoAdmin() {
               return (
                 <button key={tab.id}
                   onClick={() => { setActiveTab(tab.id); setSearchTerm(''); }}
-                  className={`flex items-center gap-2 px-6 py-4 rounded-2xl font-bold text-base transition-all whitespace-nowrap min-h-[56px] ${
+                  className={`flex flex-col md:flex-row items-center gap-1 md:gap-2 px-3 md:px-6 py-2 md:py-4 rounded-xl md:rounded-2xl font-bold text-xs md:text-base transition-all whitespace-nowrap min-h-[48px] md:min-h-[56px] ${
                     activeTab === tab.id
                       ? 'bg-gradient-to-r from-blue-900 to-blue-700 text-white shadow-lg'
                       : 'bg-gray-100 hover:bg-gray-200'
                   }`}>
-                  <Icon size={20} /> {tab.label}
+                  <Icon size={18} /> <span>{tab.label}</span>
                 </button>
               );
             })}
@@ -1284,7 +1284,7 @@ export default function TuxedoAdmin() {
       </nav>
 
       {/* ── Main Content ──────────────────────────────────────────────────── */}
-      <main className="max-w-full p-6">
+      <main className="max-w-full p-3 md:p-6">
 
         {/* ════ DASHBOARD ══════════════════════════════════════════════════ */}
         {activeTab === 'dashboard' && (
@@ -1297,36 +1297,36 @@ export default function TuxedoAdmin() {
                 { label: t.overdueReturns, value: overdue.length, color: 'from-rose-500 to-rose-700' },
                 { label: t.outstanding, value: `$${totalOutstanding.toFixed(0)}`, color: 'from-sky-600 to-blue-700' },
               ].map(card => (
-                <div key={card.label} className={`bg-gradient-to-r ${card.color} text-white rounded-3xl p-6 shadow-xl`}>
-                  <div className="text-5xl font-bold">{card.value}</div>
-                  <div className="text-lg mt-2 opacity-90">{card.label}</div>
+                <div key={card.label} className={`bg-gradient-to-r ${card.color} text-white rounded-3xl p-4 md:p-6 shadow-xl`}>
+                  <div className="text-3xl md:text-5xl font-bold">{card.value}</div>
+                  <div className="text-sm md:text-lg mt-2 opacity-90">{card.label}</div>
                 </div>
               ))}
             </div>
 
             {/* Overdue */}
             {overdue.length > 0 && (
-              <div className="bg-rose-50 border-4 border-rose-400 rounded-3xl p-8">
-                <h2 className="text-3xl font-bold text-rose-800 flex items-center gap-4 mb-6">
-                  <AlertCircle size={40} /> {t.overdueReturns} ({overdue.length})
+              <div className="bg-rose-50 border-4 border-rose-400 rounded-3xl p-4 md:p-8">
+                <h2 className="text-xl md:text-3xl font-bold text-rose-800 flex items-center gap-3 mb-4 md:mb-6">
+                  <AlertCircle size={28} /> {t.overdueReturns} ({overdue.length})
                 </h2>
                 {overdue.map(r => (
-                  <div key={r.id} className="bg-white p-6 rounded-2xl mb-4 shadow-lg flex justify-between items-center">
-                    <div>
-                      <p className="text-2xl font-bold">{r.customers?.name}</p>
-                      <p className="text-lg text-rose-600">{language === 'es' ? 'Vence' : 'Due'}: {r.return_date}</p>
-                      <p className="text-base text-gray-500">{r.item_ids?.length} {t.items} · ${getRentalBalance(r).toFixed(2)} {t.balance}</p>
+                  <div key={r.id} className="bg-white p-4 md:p-6 rounded-2xl mb-4 shadow-lg flex justify-between items-center gap-3">
+                    <div className="min-w-0">
+                      <p className="text-lg md:text-2xl font-bold truncate">{r.customers?.name}</p>
+                      <p className="text-sm md:text-lg text-rose-600">{language === 'es' ? 'Vence' : 'Due'}: {r.return_date}</p>
+                      <p className="text-xs md:text-base text-gray-500">{r.item_ids?.length} {t.items} · ${getRentalBalance(r).toFixed(2)} {t.balance}</p>
                     </div>
-                    <div className="flex gap-3">
+                    <div className="flex gap-2 flex-shrink-0">
                       {hasPermission('edit') && (
                         <button onClick={() => handleCheckIn(r.id)}
-                          className="bg-rose-600 text-white px-8 py-5 rounded-2xl font-bold text-xl hover:bg-rose-700 min-h-[56px]">
+                          className="bg-rose-600 text-white px-4 md:px-8 py-3 md:py-5 rounded-2xl font-bold text-sm md:text-xl hover:bg-rose-700 min-h-[48px]">
                           {t.checkInNow}
                         </button>
                       )}
                       <button onClick={() => printContract(r)}
-                        className="bg-gray-200 text-gray-700 px-6 py-5 rounded-2xl font-bold text-xl hover:bg-gray-300 min-h-[56px] flex items-center gap-2">
-                        <Printer size={20} />
+                        className="bg-gray-200 text-gray-700 px-3 md:px-6 py-3 md:py-5 rounded-2xl hover:bg-gray-300 min-h-[48px] flex items-center">
+                        <Printer size={18} />
                       </button>
                     </div>
                   </div>
@@ -1336,21 +1336,21 @@ export default function TuxedoAdmin() {
 
             {/* Today's Reservations */}
             {todayReservations.length > 0 && (
-              <div className="bg-sky-50 border-4 border-sky-400 rounded-3xl p-8">
-                <h2 className="text-3xl font-bold text-blue-800 flex items-center gap-4 mb-6">
-                  <FileText size={40} /> {t.todayReservations} ({todayReservations.length})
+              <div className="bg-sky-50 border-4 border-sky-400 rounded-3xl p-4 md:p-8">
+                <h2 className="text-xl md:text-3xl font-bold text-blue-800 flex items-center gap-3 mb-4 md:mb-6">
+                  <FileText size={28} /> {t.todayReservations} ({todayReservations.length})
                 </h2>
                 {todayReservations.map(r => (
-                  <div key={r.id} className="bg-white p-6 rounded-2xl mb-4 shadow-lg flex justify-between items-center">
-                    <div>
-                      <p className="text-2xl font-bold">{r.customers?.name}</p>
-                      <p className="text-lg text-blue-600">{t.pickupDate}: {r.pickup_date} · {t.eventDate}: {r.event_date || '—'}</p>
-                      <p className="text-base text-gray-500">{r.item_ids?.length} {t.items} · ${r.total?.toFixed(2)} · {t.deposit}: ${r.deposit?.toFixed(2)}</p>
+                  <div key={r.id} className="bg-white p-4 md:p-6 rounded-2xl mb-4 shadow-lg flex justify-between items-center gap-3">
+                    <div className="min-w-0">
+                      <p className="text-lg md:text-2xl font-bold truncate">{r.customers?.name}</p>
+                      <p className="text-xs md:text-lg text-blue-600">{t.pickupDate}: {r.pickup_date} · {t.eventDate}: {r.event_date || '—'}</p>
+                      <p className="text-xs md:text-base text-gray-500">{r.item_ids?.length} {t.items} · ${r.total?.toFixed(2)} · {t.deposit}: ${r.deposit?.toFixed(2)}</p>
                       {currentStoreId === 'all' && <p className="text-sm text-blue-700">{getStoreName(r.store_id)}</p>}
                     </div>
                     <button onClick={() => printContract(r)}
-                      className="bg-gray-200 text-gray-700 px-6 py-5 rounded-2xl hover:bg-gray-300 min-h-[56px] flex items-center gap-2 font-bold">
-                      <Printer size={20} />
+                      className="bg-gray-200 text-gray-700 px-3 md:px-6 py-3 md:py-5 rounded-2xl hover:bg-gray-300 min-h-[48px] flex items-center flex-shrink-0">
+                      <Printer size={18} />
                     </button>
                   </div>
                 ))}
@@ -1359,28 +1359,28 @@ export default function TuxedoAdmin() {
 
             {/* Today's Pickups */}
             {todayPickups.length > 0 && (
-              <div className="bg-blue-50 border-4 border-blue-500 rounded-3xl p-8">
-                <h2 className="text-3xl font-bold text-blue-800 flex items-center gap-4 mb-6">
-                  <Calendar size={40} /> {t.todayPickups} ({todayPickups.length})
+              <div className="bg-blue-50 border-4 border-blue-500 rounded-3xl p-4 md:p-8">
+                <h2 className="text-xl md:text-3xl font-bold text-blue-800 flex items-center gap-3 mb-4 md:mb-6">
+                  <Calendar size={28} /> {t.todayPickups} ({todayPickups.length})
                 </h2>
                 {todayPickups.map(r => (
-                  <div key={r.id} className="bg-white p-6 rounded-2xl mb-4 shadow-lg flex justify-between items-center">
-                    <div>
-                      <p className="text-2xl font-bold">{r.customers?.name}</p>
-                      <p className="text-lg text-blue-600">{t.eventDate}: {r.event_date || '—'}</p>
-                      <p className="text-base text-gray-500">{r.item_ids?.length} {t.items} · ${r.total?.toFixed(2)}</p>
+                  <div key={r.id} className="bg-white p-4 md:p-6 rounded-2xl mb-4 shadow-lg flex justify-between items-center gap-3">
+                    <div className="min-w-0">
+                      <p className="text-lg md:text-2xl font-bold truncate">{r.customers?.name}</p>
+                      <p className="text-sm md:text-lg text-blue-600">{t.eventDate}: {r.event_date || '—'}</p>
+                      <p className="text-xs md:text-base text-gray-500">{r.item_ids?.length} {t.items} · ${r.total?.toFixed(2)}</p>
                       {currentStoreId === 'all' && <p className="text-sm text-blue-700">{getStoreName(r.store_id)}</p>}
                     </div>
-                    <div className="flex gap-3">
+                    <div className="flex gap-2 flex-shrink-0">
                       {hasPermission('edit') && (
                         <button onClick={() => handlePickup(r.id)}
-                          className="bg-blue-800 text-white px-8 py-5 rounded-2xl font-bold text-xl hover:bg-blue-900 min-h-[56px]">
+                          className="bg-blue-800 text-white px-4 md:px-8 py-3 md:py-5 rounded-2xl font-bold text-sm md:text-xl hover:bg-blue-900 min-h-[48px]">
                           {t.markPickedUp}
                         </button>
                       )}
                       <button onClick={() => printContract(r)}
-                        className="bg-gray-200 text-gray-700 px-6 py-5 rounded-2xl hover:bg-gray-300 min-h-[56px] flex items-center gap-2 font-bold">
-                        <Printer size={20} />
+                        className="bg-gray-200 text-gray-700 px-3 md:px-6 py-3 md:py-5 rounded-2xl hover:bg-gray-300 min-h-[48px] flex items-center">
+                        <Printer size={18} />
                       </button>
                     </div>
                   </div>
@@ -1390,20 +1390,20 @@ export default function TuxedoAdmin() {
 
             {/* Today's Returns */}
             {todayReturns.length > 0 && (
-              <div className="bg-blue-50 border-4 border-blue-400 rounded-3xl p-8">
-                <h2 className="text-3xl font-bold text-blue-800 flex items-center gap-4 mb-6">
-                  <CheckCircle size={40} /> {t.todayReturns} ({todayReturns.length})
+              <div className="bg-blue-50 border-4 border-blue-400 rounded-3xl p-4 md:p-8">
+                <h2 className="text-xl md:text-3xl font-bold text-blue-800 flex items-center gap-3 mb-4 md:mb-6">
+                  <CheckCircle size={28} /> {t.todayReturns} ({todayReturns.length})
                 </h2>
                 {todayReturns.map(r => (
-                  <div key={r.id} className="bg-white p-6 rounded-2xl mb-4 shadow-lg flex justify-between items-center">
-                    <div>
-                      <p className="text-2xl font-bold">{r.customers?.name}</p>
-                      <p className="text-lg text-blue-600">{t.returnDate}: {r.return_date}</p>
-                      <p className="text-base text-gray-500">${getRentalBalance(r).toFixed(2)} {t.balance}</p>
+                  <div key={r.id} className="bg-white p-4 md:p-6 rounded-2xl mb-4 shadow-lg flex justify-between items-center gap-3">
+                    <div className="min-w-0">
+                      <p className="text-lg md:text-2xl font-bold truncate">{r.customers?.name}</p>
+                      <p className="text-sm md:text-lg text-blue-600">{t.returnDate}: {r.return_date}</p>
+                      <p className="text-xs md:text-base text-gray-500">${getRentalBalance(r).toFixed(2)} {t.balance}</p>
                     </div>
                     {hasPermission('edit') && (
                       <button onClick={() => handleCheckIn(r.id)}
-                        className="bg-blue-800 text-white px-8 py-5 rounded-2xl font-bold text-xl hover:bg-blue-900 min-h-[56px]">
+                        className="bg-blue-800 text-white px-4 md:px-8 py-3 md:py-5 rounded-2xl font-bold text-sm md:text-xl hover:bg-blue-900 min-h-[48px] flex-shrink-0">
                         {t.checkInNow}
                       </button>
                     )}
@@ -1424,16 +1424,16 @@ export default function TuxedoAdmin() {
         {/* ════ RENTALS ═════════════════════════════════════════════════════ */}
         {activeTab === 'rentals' && (
           <div>
-            <div className="flex justify-between items-center mb-8 gap-4 flex-wrap">
-              <h2 className="text-4xl font-bold">{t.rentals}</h2>
-              <div className="flex gap-3 items-center flex-wrap">
+            <div className="flex justify-between items-center mb-4 md:mb-8 gap-3 flex-wrap">
+              <h2 className="text-2xl md:text-4xl font-bold">{t.rentals}</h2>
+              <div className="flex gap-2 md:gap-3 items-center flex-wrap">
                 <input type="text" placeholder={`${t.search}…`} value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
-                  className="px-6 py-4 border-2 rounded-2xl text-lg min-h-[56px] w-60" />
+                  className="px-4 md:px-6 py-3 md:py-4 border-2 rounded-2xl text-base md:text-lg min-h-[48px] md:min-h-[56px] w-44 md:w-60" />
                 {hasPermission('edit') && (
                   <button onClick={() => openModal('rental')}
-                    className="flex items-center gap-3 bg-gradient-to-r from-blue-900 to-blue-700 text-white px-8 py-4 rounded-2xl font-bold text-xl hover:scale-105 transition min-h-[56px]">
-                    <Plus size={28} /> {t.newRental}
+                    className="flex items-center gap-2 bg-gradient-to-r from-blue-900 to-blue-700 text-white px-5 md:px-8 py-3 md:py-4 rounded-2xl font-bold text-base md:text-xl hover:scale-105 transition min-h-[48px] md:min-h-[56px]">
+                    <Plus size={22} /> {t.newRental}
                   </button>
                 )}
               </div>
@@ -1519,16 +1519,16 @@ export default function TuxedoAdmin() {
         {/* ════ CUSTOMERS ═══════════════════════════════════════════════════ */}
         {activeTab === 'customers' && (
           <div>
-            <div className="flex justify-between items-center mb-8 gap-4 flex-wrap">
-              <h2 className="text-4xl font-bold">{t.customers}</h2>
-              <div className="flex gap-3 items-center flex-wrap">
+            <div className="flex justify-between items-center mb-4 md:mb-8 gap-3 flex-wrap">
+              <h2 className="text-2xl md:text-4xl font-bold">{t.customers}</h2>
+              <div className="flex gap-2 md:gap-3 items-center flex-wrap">
                 <input type="text" placeholder={`${t.search}…`} value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
-                  className="px-6 py-4 border-2 rounded-2xl text-lg min-h-[56px] w-60" />
+                  className="px-4 md:px-6 py-3 md:py-4 border-2 rounded-2xl text-base md:text-lg min-h-[48px] md:min-h-[56px] w-44 md:w-60" />
                 {hasPermission('edit') && (
                   <button onClick={() => openModal('customer')}
-                    className="flex items-center gap-3 bg-gradient-to-r from-blue-900 to-blue-700 text-white px-8 py-4 rounded-2xl font-bold text-xl hover:scale-105 transition min-h-[56px]">
-                    <Plus size={28} /> {t.addCustomer}
+                    className="flex items-center gap-2 bg-gradient-to-r from-blue-900 to-blue-700 text-white px-5 md:px-8 py-3 md:py-4 rounded-2xl font-bold text-base md:text-xl hover:scale-105 transition min-h-[48px] md:min-h-[56px]">
+                    <Plus size={22} /> {t.addCustomer}
                   </button>
                 )}
               </div>
@@ -1602,16 +1602,16 @@ export default function TuxedoAdmin() {
         {/* ════ INVENTORY ═══════════════════════════════════════════════════ */}
         {activeTab === 'inventory' && (
           <div>
-            <div className="flex justify-between items-center mb-4 gap-4 flex-wrap">
-              <h2 className="text-4xl font-bold">{t.inventory}</h2>
-              <div className="flex gap-3 items-center flex-wrap">
+            <div className="flex justify-between items-center mb-4 gap-3 flex-wrap">
+              <h2 className="text-2xl md:text-4xl font-bold">{t.inventory}</h2>
+              <div className="flex gap-2 md:gap-3 items-center flex-wrap">
                 <input type="text" placeholder={`${t.search}…`} value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
-                  className="px-6 py-4 border-2 rounded-2xl text-lg min-h-[56px] w-60" />
+                  className="px-4 md:px-6 py-3 md:py-4 border-2 rounded-2xl text-base md:text-lg min-h-[48px] md:min-h-[56px] w-44 md:w-60" />
                 {hasPermission('edit') && (
                   <button onClick={() => openModal('inventory')}
-                    className="flex items-center gap-3 bg-gradient-to-r from-blue-900 to-blue-700 text-white px-8 py-4 rounded-2xl font-bold text-xl hover:scale-105 transition min-h-[56px]">
-                    <Plus size={28} /> {t.addItem}
+                    className="flex items-center gap-2 bg-gradient-to-r from-blue-900 to-blue-700 text-white px-5 md:px-8 py-3 md:py-4 rounded-2xl font-bold text-base md:text-xl hover:scale-105 transition min-h-[48px] md:min-h-[56px]">
+                    <Plus size={22} /> {t.addItem}
                   </button>
                 )}
               </div>
@@ -1690,7 +1690,7 @@ export default function TuxedoAdmin() {
         {/* ════ BILLING ═════════════════════════════════════════════════════ */}
         {activeTab === 'billing' && (
           <div className="space-y-8">
-            <h2 className="text-4xl font-bold">{t.billing}</h2>
+            <h2 className="text-2xl md:text-4xl font-bold">{t.billing}</h2>
 
             {/* Summary Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
@@ -2308,10 +2308,10 @@ export default function TuxedoAdmin() {
 
       {/* ── Modal ─────────────────────────────────────────────────────────── */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl p-8 lg:p-12 max-w-3xl w-full my-4 shadow-2xl">
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-4xl font-bold">
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-start md:items-center justify-center z-50 p-2 md:p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl p-5 md:p-8 lg:p-12 max-w-3xl w-full my-2 md:my-4 shadow-2xl">
+            <div className="flex justify-between items-center mb-5 md:mb-8">
+              <h2 className="text-2xl md:text-4xl font-bold">
                 {modalType === 'customer' ? (formData.id ? `${t.edit} ${t.customer}` : t.addCustomer) :
                  modalType === 'inventory' ? (formData.id ? `${t.edit} ${t.inventory}` : t.addItem) :
                  modalType === 'user' ? (formData.id ? `${t.edit} ${t.users}` : t.addUser) :
