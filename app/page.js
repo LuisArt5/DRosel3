@@ -6,7 +6,8 @@ import {
   Calendar, Users, Package, DollarSign, BarChart3, Search, Plus, X,
   LogOut, Clock, AlertCircle, CheckCircle, Edit2, Upload, Eye,
   Printer, Trash2, CreditCard, Save, Ruler, Globe, UserCog,
-  Building2, MapPin, Phone, FileText, TrendingUp, Award
+  Building2, MapPin, Phone, FileText, TrendingUp, Award,
+  Sun, Moon, Menu
 } from 'lucide-react';
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -189,6 +190,8 @@ export default function TuxedoAdmin() {
   const [quickPayRental, setQuickPayRental] = useState(null);
   const [quickPayMethod, setQuickPayMethod] = useState('cash');
   const [quickPayOnComplete, setQuickPayOnComplete] = useState(null);
+  const [darkMode, setDarkMode] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const t = translations[language];
   const today = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })();
@@ -198,6 +201,14 @@ export default function TuxedoAdmin() {
   useEffect(() => {
     if (user) loadData(currentStoreId);
   }, [currentStoreId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [darkMode]);
 
   // ─── Auth ──────────────────────────────────────────────────────────────────
   const checkUser = async () => {
@@ -913,7 +924,7 @@ export default function TuxedoAdmin() {
 
   // ─── Render ───────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen flex bg-gray-50">
 
       {/* ── Print CSS ─────────────────────────────────────────────────────── */}
       <style>{`
@@ -1218,70 +1229,98 @@ export default function TuxedoAdmin() {
         </div>
       </div>
 
-      {/* ── Header ────────────────────────────────────────────────────────── */}
-      <header className="bg-slate-900 text-white shadow-2xl sticky top-0 z-40">
-        <div className="max-w-full px-3 md:px-6 py-3 md:py-4 flex justify-between items-center gap-2 md:gap-4">
-          <h1 className="text-sm md:text-3xl font-bold whitespace-nowrap">D'Rosel Tuxedo Rentals</h1>
-          <div className="flex items-center gap-2 md:gap-3 flex-wrap justify-end">
-            {/* Store Selector */}
-            <select
-              value={currentStoreId}
-              onChange={e => { setCurrentStoreId(e.target.value); setSearchTerm(''); }}
-              className="bg-white text-slate-900 px-2 md:px-4 py-2 md:py-3 rounded-full font-bold text-sm md:text-base min-h-[40px] md:min-h-[48px] cursor-pointer max-w-[120px] md:max-w-none"
-            >
-              {profile?.role === 'admin' && <option value="all">{t.allStores}</option>}
-              {stores.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-              {stores.length === 0 && <option value="all">{t.selectStore}</option>}
-            </select>
-            {/* Language */}
-            <button onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
-              className="flex items-center gap-1 bg-white text-slate-900 px-3 md:px-5 py-2 md:py-3 rounded-full font-bold hover:bg-gray-100 transition min-h-[40px] md:min-h-[48px] text-sm md:text-base">
-              <Globe size={16} /> {language === 'en' ? 'ES' : 'EN'}
-            </button>
-            <span className="hidden md:inline bg-gradient-to-r from-blue-900 to-blue-700 px-6 py-3 rounded-full font-bold text-base">
-              {profile?.role?.toUpperCase() || 'USER'}
-            </span>
-            <button onClick={signOut}
-              className="flex items-center gap-1 bg-red-600 px-3 md:px-6 py-2 md:py-3 rounded-2xl hover:bg-red-700 transition font-bold text-sm md:text-base min-h-[40px] md:min-h-[48px]">
-              <LogOut size={18} /> <span className="hidden md:inline">{t.logout}</span>
-            </button>
-          </div>
-        </div>
-      </header>
+      {/* ── Sidebar Overlay (mobile) ──────────────────────────────────────── */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+             onClick={() => setSidebarOpen(false)} />
+      )}
 
-      {/* ── Navigation ────────────────────────────────────────────────────── */}
-      <nav className="bg-white shadow-xl sticky top-[57px] md:top-[73px] z-30">
-        <div className="max-w-full px-2 md:px-4 py-2 md:py-3">
-          <div className="flex gap-1 md:gap-2 overflow-x-auto pb-1">
-            {[
-              { id: 'dashboard', label: t.dashboard, icon: Clock },
-              { id: 'rentals', label: t.rentals, icon: Calendar },
-              { id: 'customers', label: t.customers, icon: Users },
-              { id: 'inventory', label: t.inventory, icon: Package },
-              { id: 'billing', label: t.billing, icon: DollarSign },
-              ...(profile?.role !== 'staff' ? [{ id: 'analytics', label: t.analytics, icon: BarChart3 }] : []),
-              { id: 'cleaner', label: t.cleanerTab, icon: Ruler },
-              ...(profile?.role === 'admin' ? [
-                { id: 'stores', label: t.stores, icon: Building2 },
-                { id: 'users', label: t.users, icon: UserCog },
-              ] : []),
-            ].map(tab => {
-              const Icon = tab.icon;
-              return (
-                <button key={tab.id}
-                  onClick={() => { setActiveTab(tab.id); setSearchTerm(''); }}
-                  className={`flex flex-col md:flex-row items-center gap-1 md:gap-2 px-3 md:px-6 py-2 md:py-4 rounded-xl md:rounded-2xl font-bold text-xs md:text-base transition-all whitespace-nowrap min-h-[48px] md:min-h-[56px] ${
-                    activeTab === tab.id
-                      ? 'bg-gradient-to-r from-blue-900 to-blue-700 text-white shadow-lg'
-                      : 'bg-gray-100 hover:bg-gray-200'
-                  }`}>
-                  <Icon size={18} /> <span>{tab.label}</span>
-                </button>
-              );
-            })}
-          </div>
+      {/* ── Sidebar ───────────────────────────────────────────────────────── */}
+      <aside className={`fixed top-0 left-0 h-full w-60 bg-slate-900 z-50 flex flex-col transition-transform duration-300 ${
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+      }`}>
+        {/* Logo */}
+        <div className="px-5 py-5 border-b border-slate-700">
+          <h1 className="text-white font-bold text-sm leading-snug">D&apos;Rosel Tuxedo Rentals</h1>
+          <span className="text-slate-400 text-xs mt-1 block">{profile?.role?.toUpperCase()}</span>
         </div>
-      </nav>
+
+        {/* Nav items */}
+        <nav className="flex-1 p-3 overflow-y-auto space-y-1">
+          {[
+            { id: 'dashboard', label: t.dashboard, icon: Clock },
+            { id: 'rentals', label: t.rentals, icon: Calendar },
+            { id: 'customers', label: t.customers, icon: Users },
+            { id: 'inventory', label: t.inventory, icon: Package },
+            { id: 'billing', label: t.billing, icon: DollarSign },
+            ...(profile?.role !== 'staff' ? [{ id: 'analytics', label: t.analytics, icon: BarChart3 }] : []),
+            { id: 'cleaner', label: t.cleanerTab, icon: Ruler },
+            ...(profile?.role === 'admin' ? [
+              { id: 'stores', label: t.stores, icon: Building2 },
+              { id: 'users', label: t.users, icon: UserCog },
+            ] : []),
+          ].map(tab => {
+            const Icon = tab.icon;
+            return (
+              <button key={tab.id}
+                onClick={() => { setActiveTab(tab.id); setSearchTerm(''); setSidebarOpen(false); }}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm transition-all text-left ${
+                  activeTab === tab.id
+                    ? 'bg-blue-600 text-white'
+                    : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                }`}>
+                <Icon size={18} /> {tab.label}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Bottom controls */}
+        <div className="p-3 border-t border-slate-700 space-y-1">
+          <select
+            value={currentStoreId}
+            onChange={e => { setCurrentStoreId(e.target.value); setSearchTerm(''); }}
+            className="w-full bg-slate-800 text-slate-200 px-3 py-2 rounded-xl text-sm font-semibold cursor-pointer border border-slate-600 mb-1"
+          >
+            {profile?.role === 'admin' && <option value="all">{t.allStores}</option>}
+            {stores.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+            {stores.length === 0 && <option value="all">{t.selectStore}</option>}
+          </select>
+          <button onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
+            className="w-full flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition text-sm font-semibold">
+            <Globe size={16} /> {language === 'en' ? 'English' : 'Español'}
+          </button>
+          <button onClick={() => setDarkMode(!darkMode)}
+            className="w-full flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition text-sm font-semibold">
+            {darkMode ? <Sun size={16} /> : <Moon size={16} />}
+            {darkMode ? (language === 'es' ? 'Modo Claro' : 'Light Mode') : (language === 'es' ? 'Modo Oscuro' : 'Dark Mode')}
+          </button>
+          <button onClick={signOut}
+            className="w-full flex items-center gap-3 px-4 py-2 rounded-xl text-rose-400 hover:bg-rose-900 hover:text-rose-100 transition text-sm font-semibold">
+            <LogOut size={16} /> {t.logout}
+          </button>
+        </div>
+      </aside>
+
+      {/* ── Main content area ─────────────────────────────────────────────── */}
+      <div className="flex-1 flex flex-col min-w-0 md:ml-60">
+
+        {/* Top bar */}
+        <header className="bg-white border-b border-gray-200 sticky top-0 z-30 px-4 py-3 flex items-center gap-3 shadow-sm">
+          <button className="md:hidden text-gray-600 p-1" onClick={() => setSidebarOpen(true)}>
+            <Menu size={24} />
+          </button>
+          <h2 className="font-bold text-lg flex-1 text-gray-800">
+            {activeTab === 'dashboard' ? t.dashboard :
+             activeTab === 'rentals' ? t.rentals :
+             activeTab === 'customers' ? t.customers :
+             activeTab === 'inventory' ? t.inventory :
+             activeTab === 'billing' ? t.billing :
+             activeTab === 'analytics' ? t.analytics :
+             activeTab === 'cleaner' ? t.cleanerTab :
+             activeTab === 'stores' ? t.stores : t.users}
+          </h2>
+        </header>
 
       {/* ── Main Content ──────────────────────────────────────────────────── */}
       <main className="max-w-full p-3 md:p-6">
@@ -2264,6 +2303,7 @@ export default function TuxedoAdmin() {
           </div>
         )}
       </main>
+      </div>{/* end main content area */}
 
       {/* ── Quick Pay Modal ───────────────────────────────────────────────── */}
       {quickPayRental && (
