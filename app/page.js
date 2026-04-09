@@ -199,6 +199,10 @@ export default function TuxedoAdmin() {
   useEffect(() => { checkUser(); }, []);
 
   useEffect(() => {
+    document.documentElement.style.backgroundColor = darkMode ? '#0f172a' : '';
+  }, [darkMode]);
+
+  useEffect(() => {
     if (user) loadData(currentStoreId);
   }, [currentStoreId]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -917,7 +921,7 @@ export default function TuxedoAdmin() {
 
   // ─── Render ───────────────────────────────────────────────────────────────
   return (
-    <div className={`min-h-screen flex bg-gray-50${darkMode ? ' dark' : ''}`}>
+    <div className={`min-h-screen flex ${darkMode ? 'dark bg-slate-900' : 'bg-gray-50'}`}>
 
       {/* ── Print CSS ─────────────────────────────────────────────────────── */}
       <style>{`
@@ -1296,14 +1300,14 @@ export default function TuxedoAdmin() {
       </aside>
 
       {/* ── Main content area ─────────────────────────────────────────────── */}
-      <div className="flex-1 flex flex-col min-w-0 md:ml-60">
+      <div className={`flex-1 flex flex-col min-w-0 md:ml-60 ${darkMode ? 'bg-slate-900' : 'bg-gray-50'}`}>
 
         {/* Top bar */}
-        <header className="bg-white border-b border-gray-200 sticky top-0 z-30 px-4 py-3 flex items-center gap-3 shadow-sm">
-          <button className="md:hidden text-gray-600 p-1" onClick={() => setSidebarOpen(true)}>
+        <header className={`${darkMode ? 'bg-slate-800 border-slate-700 text-slate-100' : 'bg-white border-gray-200 text-gray-800'} border-b sticky top-0 z-30 px-4 py-3 flex items-center gap-3 shadow-sm`}>
+          <button className={`md:hidden p-1 ${darkMode ? 'text-slate-300' : 'text-gray-600'}`} onClick={() => setSidebarOpen(true)}>
             <Menu size={24} />
           </button>
-          <h2 className="font-bold text-lg flex-1 text-gray-800">
+          <h2 className="font-bold text-lg flex-1">
             {activeTab === 'dashboard' ? t.dashboard :
              activeTab === 'rentals' ? t.rentals :
              activeTab === 'customers' ? t.customers :
@@ -1329,7 +1333,7 @@ export default function TuxedoAdmin() {
                 { label: t.overdueReturns, value: overdue.length, color: 'from-rose-500 to-rose-700' },
                 { label: t.outstanding, value: `$${totalOutstanding.toFixed(0)}`, color: 'from-sky-600 to-blue-700' },
               ].map(card => (
-                <div key={card.label} className={`bg-gradient-to-r ${card.color} text-white rounded-3xl p-4 md:p-6 shadow-xl`}>
+                <div key={card.label} className={`bg-gradient-to-r ${card.color} text-white rounded-xl p-4 md:p-6 shadow-xl`}>
                   <div className="text-3xl md:text-5xl font-bold">{card.value}</div>
                   <div className="text-sm md:text-lg mt-2 opacity-90">{card.label}</div>
                 </div>
@@ -1338,7 +1342,7 @@ export default function TuxedoAdmin() {
 
             {/* Overdue */}
             {overdue.length > 0 && (
-              <div className="bg-rose-50 border-4 border-rose-400 rounded-3xl p-4 md:p-8">
+              <div className="bg-rose-50 border-4 border-rose-400 rounded-xl p-4 md:p-8">
                 <h2 className="text-xl md:text-3xl font-bold text-rose-800 flex items-center gap-3 mb-4 md:mb-6">
                   <AlertCircle size={28} /> {t.overdueReturns} ({overdue.length})
                 </h2>
@@ -1368,7 +1372,7 @@ export default function TuxedoAdmin() {
 
             {/* Today's Reservations */}
             {todayReservations.length > 0 && (
-              <div className="bg-sky-50 border-4 border-sky-400 rounded-3xl p-4 md:p-8">
+              <div className="bg-sky-50 border-4 border-sky-400 rounded-xl p-4 md:p-8">
                 <h2 className="text-xl md:text-3xl font-bold text-blue-800 flex items-center gap-3 mb-4 md:mb-6">
                   <FileText size={28} /> {t.todayReservations} ({todayReservations.length})
                 </h2>
@@ -1391,7 +1395,7 @@ export default function TuxedoAdmin() {
 
             {/* Today's Pickups */}
             {todayPickups.length > 0 && (
-              <div className="bg-blue-50 border-4 border-blue-500 rounded-3xl p-4 md:p-8">
+              <div className="bg-blue-50 border-4 border-blue-500 rounded-xl p-4 md:p-8">
                 <h2 className="text-xl md:text-3xl font-bold text-blue-800 flex items-center gap-3 mb-4 md:mb-6">
                   <Calendar size={28} /> {t.todayPickups} ({todayPickups.length})
                 </h2>
@@ -1422,7 +1426,7 @@ export default function TuxedoAdmin() {
 
             {/* Today's Returns */}
             {todayReturns.length > 0 && (
-              <div className="bg-blue-50 border-4 border-blue-400 rounded-3xl p-4 md:p-8">
+              <div className="bg-blue-50 border-4 border-blue-400 rounded-xl p-4 md:p-8">
                 <h2 className="text-xl md:text-3xl font-bold text-blue-800 flex items-center gap-3 mb-4 md:mb-6">
                   <CheckCircle size={28} /> {t.todayReturns} ({todayReturns.length})
                 </h2>
@@ -1456,8 +1460,7 @@ export default function TuxedoAdmin() {
         {/* ════ RENTALS ═════════════════════════════════════════════════════ */}
         {activeTab === 'rentals' && (
           <div>
-            <div className="flex justify-between items-center mb-4 md:mb-8 gap-3 flex-wrap">
-              <h2 className="text-2xl md:text-4xl font-bold">{t.rentals}</h2>
+            <div className="flex justify-end items-center mb-4 gap-3 flex-wrap">
               <div className="flex gap-2 md:gap-3 items-center flex-wrap">
                 <input type="text" placeholder={`${t.search}…`} value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
@@ -1470,7 +1473,7 @@ export default function TuxedoAdmin() {
                 )}
               </div>
             </div>
-            <div className="bg-white rounded-3xl shadow-xl overflow-x-auto">
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-x-auto">
               <table className="w-full text-base">
                 <thead className="bg-gradient-to-r from-blue-900 to-blue-700 text-white">
                   <tr>
@@ -1551,8 +1554,7 @@ export default function TuxedoAdmin() {
         {/* ════ CUSTOMERS ═══════════════════════════════════════════════════ */}
         {activeTab === 'customers' && (
           <div>
-            <div className="flex justify-between items-center mb-4 md:mb-8 gap-3 flex-wrap">
-              <h2 className="text-2xl md:text-4xl font-bold">{t.customers}</h2>
+            <div className="flex justify-end items-center mb-4 gap-3 flex-wrap">
               <div className="flex gap-2 md:gap-3 items-center flex-wrap">
                 <input type="text" placeholder={`${t.search}…`} value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
@@ -1565,7 +1567,7 @@ export default function TuxedoAdmin() {
                 )}
               </div>
             </div>
-            <div className="bg-white rounded-3xl shadow-xl overflow-x-auto">
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-x-auto">
               <table className="w-full text-base">
                 <thead className="bg-gradient-to-r from-blue-900 to-blue-700 text-white">
                   <tr>
@@ -1634,8 +1636,7 @@ export default function TuxedoAdmin() {
         {/* ════ INVENTORY ═══════════════════════════════════════════════════ */}
         {activeTab === 'inventory' && (
           <div>
-            <div className="flex justify-between items-center mb-4 gap-3 flex-wrap">
-              <h2 className="text-2xl md:text-4xl font-bold">{t.inventory}</h2>
+            <div className="flex justify-end items-center mb-4 gap-3 flex-wrap">
               <div className="flex gap-2 md:gap-3 items-center flex-wrap">
                 <input type="text" placeholder={`${t.search}…`} value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
@@ -1678,7 +1679,7 @@ export default function TuxedoAdmin() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredInventory.map(item => (
-                <div key={item.id} className="bg-white rounded-3xl shadow-xl p-6">
+                <div key={item.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
                   <div className="flex justify-between items-start mb-3">
                     <h3 className="text-2xl font-bold leading-tight">{item.name}</h3>
                     <span className={`px-3 py-1 rounded-full text-sm font-bold ml-2 flex-shrink-0 ${
@@ -1714,7 +1715,7 @@ export default function TuxedoAdmin() {
               ))}
             </div>
             {filteredInventory.length === 0 && (
-              <div className="text-center py-16 text-gray-400 text-xl bg-white rounded-3xl shadow-xl">{t.noData}</div>
+              <div className="text-center py-16 text-gray-400 text-xl bg-white rounded-xl border border-gray-100 shadow-sm">{t.noData}</div>
             )}
           </div>
         )}
@@ -1722,8 +1723,6 @@ export default function TuxedoAdmin() {
         {/* ════ BILLING ═════════════════════════════════════════════════════ */}
         {activeTab === 'billing' && (
           <div className="space-y-8">
-            <h2 className="text-2xl md:text-4xl font-bold">{t.billing}</h2>
-
             {/* Summary Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               {[
@@ -1731,7 +1730,7 @@ export default function TuxedoAdmin() {
                 { label: t.totalCollected, value: `$${totalCollected.toFixed(2)}`, color: 'from-blue-600 to-blue-800' },
                 { label: t.totalOutstanding, value: `$${totalOutstanding.toFixed(2)}`, color: 'from-rose-500 to-rose-700' },
               ].map(c => (
-                <div key={c.label} className={`bg-gradient-to-r ${c.color} text-white rounded-3xl p-8 shadow-xl`}>
+                <div key={c.label} className={`bg-gradient-to-r ${c.color} text-white rounded-xl p-8 shadow-xl`}>
                   <div className="text-4xl font-bold">{c.value}</div>
                   <div className="text-lg mt-2 opacity-90">{c.label}</div>
                 </div>
@@ -1740,7 +1739,7 @@ export default function TuxedoAdmin() {
 
             {/* Add Payment */}
             {hasPermission('edit') && (
-              <div className="bg-white rounded-3xl shadow-xl p-8">
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-8">
                 <h3 className="text-2xl font-bold mb-6">{t.addPayment}</h3>
                 <div className="flex gap-4 flex-wrap items-end">
                   <div className="flex-1 min-w-[200px]">
@@ -1781,7 +1780,7 @@ export default function TuxedoAdmin() {
             )}
 
             {/* Outstanding Rentals */}
-            <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
               <div className="px-8 py-6 bg-gradient-to-r from-rose-600 to-rose-700 text-white">
                 <h3 className="text-2xl font-bold">{t.overdueBalances}</h3>
               </div>
@@ -1828,7 +1827,7 @@ export default function TuxedoAdmin() {
             </div>
 
             {/* Recent Payments */}
-            <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
               <div className="px-8 py-6 bg-gradient-to-r from-blue-900 to-blue-700 text-white">
                 <h3 className="text-2xl font-bold">{t.recentPayments}</h3>
               </div>
@@ -1866,7 +1865,6 @@ export default function TuxedoAdmin() {
         {activeTab === 'analytics' && profile?.role !== 'staff' && (
           <div className="space-y-8">
             <div className="flex justify-between items-center flex-wrap gap-4">
-              <h2 className="text-4xl font-bold">{t.analytics}</h2>
               <div className="flex gap-2 flex-wrap">
                 {[['thisWeek', t.thisWeek], ['thisMonth', t.thisMonth], ['thisYear', t.thisYear], ['allTime', t.allTime]].map(([val, label]) => (
                   <button key={val} onClick={() => setAnalyticsFilter(val)}
@@ -1893,7 +1891,7 @@ export default function TuxedoAdmin() {
                 const Icon = card.icon;
                 const colorMap = { blue: 'from-blue-800 to-blue-900', green: 'from-blue-700 to-blue-500', purple: 'from-sky-700 to-blue-800', orange: 'from-rose-600 to-rose-700' };
                 return (
-                  <div key={card.label} className={`bg-gradient-to-r ${colorMap[card.color]} text-white rounded-3xl p-6 shadow-xl`}>
+                  <div key={card.label} className={`bg-gradient-to-r ${colorMap[card.color]} text-white rounded-xl p-6 shadow-xl`}>
                     <Icon size={36} className="mb-3 opacity-80" />
                     <div className="text-4xl font-bold">{card.value}</div>
                     <div className="text-base mt-1 opacity-90">{card.label}</div>
@@ -1912,7 +1910,7 @@ export default function TuxedoAdmin() {
               ].map(card => {
                 const Icon = card.icon;
                 return (
-                  <div key={card.label} className={`bg-gradient-to-r ${card.color} text-white rounded-3xl p-6 shadow-xl`} title={card.tip}>
+                  <div key={card.label} className={`bg-gradient-to-r ${card.color} text-white rounded-xl p-6 shadow-xl`} title={card.tip}>
                     <Icon size={36} className="mb-3 opacity-80" />
                     <div className="text-4xl font-bold">{card.value}</div>
                     <div className="text-base mt-1 opacity-90">{card.label}</div>
@@ -1922,7 +1920,7 @@ export default function TuxedoAdmin() {
             </div>
 
             {/* Revenue Chart */}
-            <div className="bg-white rounded-3xl shadow-xl p-8">
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-8">
               <h3 className="text-2xl font-bold mb-6">
                 {analyticsFilter === 'thisWeek' ? t.weeklyRevenue : t.revenueOverTime}
               </h3>
@@ -1956,7 +1954,7 @@ export default function TuxedoAdmin() {
             </div>
 
             {/* Inventory Utilization */}
-            <div className="bg-white rounded-3xl shadow-xl p-8">
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-8">
               <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
                 <h3 className="text-2xl font-bold">{t.inventoryUtilization}</h3>
                 <div className="flex flex-wrap gap-2 items-center">
@@ -2006,7 +2004,7 @@ export default function TuxedoAdmin() {
 
             {/* Status Breakdown + Payment Method */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="bg-white rounded-3xl shadow-xl p-8">
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-8">
                 <h3 className="text-2xl font-bold mb-6">{t.rentalsByStatus}</h3>
                 {getRentalsByStatus().length > 0 ? (
                   <ResponsiveContainer width="100%" height={260}>
@@ -2023,7 +2021,7 @@ export default function TuxedoAdmin() {
                 )}
               </div>
 
-              <div className="bg-white rounded-3xl shadow-xl p-8">
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-8">
                 <h3 className="text-2xl font-bold mb-6">{t.paymentMethodBreakdown}</h3>
                 {getPaymentMethodBreakdown().length > 0 ? (
                   <ResponsiveContainer width="100%" height={260}>
@@ -2043,7 +2041,7 @@ export default function TuxedoAdmin() {
 
             {/* Rentals by Day of Week */}
             {analyticsFilter !== 'thisWeek' && (
-              <div className="bg-white rounded-3xl shadow-xl p-8">
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-8">
                 <h3 className="text-2xl font-bold mb-6">{t.rentalsByDay}</h3>
                 {getRentalsByDayOfWeek().some(d => d.count > 0) ? (
                   <ResponsiveContainer width="100%" height={260}>
@@ -2063,7 +2061,7 @@ export default function TuxedoAdmin() {
 
             {/* Top Customers + Overdue */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
                 <div className="px-8 py-6 bg-gradient-to-r from-blue-900 to-blue-700 text-white">
                   <h3 className="text-2xl font-bold flex items-center gap-3"><Award size={28} /> {t.topCustomers}</h3>
                 </div>
@@ -2090,7 +2088,7 @@ export default function TuxedoAdmin() {
                 {getTopCustomers().length === 0 && <div className="text-center py-12 text-gray-400">{t.noData}</div>}
               </div>
 
-              <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
                 <div className="px-8 py-6 bg-gradient-to-r from-rose-600 to-rose-700 text-white">
                   <h3 className="text-2xl font-bold flex items-center gap-3"><AlertCircle size={28} /> {t.overdueBalances}</h3>
                 </div>
@@ -2122,19 +2120,18 @@ export default function TuxedoAdmin() {
         {activeTab === 'cleaner' && (
           <div>
             <div className="flex justify-between items-center mb-8 gap-4 flex-wrap">
-              <h2 className="text-4xl font-bold">{t.cleaningTracker}</h2>
               <div className="bg-gradient-to-r from-blue-900 to-blue-700 text-white rounded-2xl px-8 py-4 text-xl font-bold">
                 {inventory.filter(i => i.status === 'cleaning').length} {t.atCleaner}
               </div>
             </div>
 
             {inventory.filter(i => i.status === 'cleaning').length === 0 ? (
-              <div className="text-center py-20 text-gray-400 text-xl bg-white rounded-3xl shadow-xl">
+              <div className="text-center py-20 text-gray-400 text-xl bg-white rounded-xl border border-gray-100 shadow-sm">
                 <Package size={64} className="mx-auto mb-4 opacity-40" />
                 {t.noItemsCleaning}
               </div>
             ) : (
-              <div className="bg-white rounded-3xl shadow-xl overflow-x-auto">
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-x-auto">
                 <table className="w-full text-base">
                   <thead className="bg-gradient-to-r from-blue-900 to-blue-700 text-white">
                     <tr>
@@ -2191,7 +2188,6 @@ export default function TuxedoAdmin() {
         {activeTab === 'stores' && profile?.role === 'admin' && (
           <div>
             <div className="flex justify-between items-center mb-8 gap-4">
-              <h2 className="text-4xl font-bold">{t.storeManagement}</h2>
               <button onClick={() => openModal('store')}
                 className="flex items-center gap-3 bg-gradient-to-r from-blue-900 to-blue-700 text-white px-8 py-4 rounded-2xl font-bold text-xl hover:scale-105 transition min-h-[56px]">
                 <Plus size={28} /> {t.addStore}
@@ -2199,7 +2195,7 @@ export default function TuxedoAdmin() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {stores.map(store => (
-                <div key={store.id} className="bg-white rounded-3xl shadow-xl p-8">
+                <div key={store.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-8">
                   {store.logo_url && (
                     <img src={store.logo_url} alt="logo" className="h-16 object-contain mb-4 rounded-xl" />
                   )}
@@ -2228,7 +2224,7 @@ export default function TuxedoAdmin() {
               ))}
             </div>
             {stores.length === 0 && (
-              <div className="text-center py-20 text-gray-400 text-xl bg-white rounded-3xl shadow-xl">
+              <div className="text-center py-20 text-gray-400 text-xl bg-white rounded-xl border border-gray-100 shadow-sm">
                 <Building2 size={64} className="mx-auto mb-4 opacity-40" />
                 {language === 'es' ? 'No hay tiendas configuradas. ¡Agrega la primera!' : 'No stores configured yet. Add your first store!'}
               </div>
@@ -2240,7 +2236,6 @@ export default function TuxedoAdmin() {
         {activeTab === 'users' && profile?.role === 'admin' && (
           <div>
             <div className="flex justify-between items-center mb-8 gap-4 flex-wrap">
-              <h2 className="text-4xl font-bold">{t.userManagement}</h2>
               <div className="flex gap-3 items-center flex-wrap">
                 <input type="text" placeholder={`${t.search}…`} value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
@@ -2251,7 +2246,7 @@ export default function TuxedoAdmin() {
                 </button>
               </div>
             </div>
-            <div className="bg-white rounded-3xl shadow-xl overflow-x-auto">
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-x-auto">
               <table className="w-full text-base">
                 <thead className="bg-gradient-to-r from-blue-900 to-blue-700 text-white">
                   <tr>
@@ -2301,7 +2296,7 @@ export default function TuxedoAdmin() {
       {/* ── Quick Pay Modal ───────────────────────────────────────────────── */}
       {quickPayRental && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl">
+          <div className="bg-white rounded-xl p-8 max-w-md w-full shadow-2xl">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-3xl font-bold">{t.payBalance}</h2>
               <button onClick={() => { setQuickPayRental(null); setQuickPayOnComplete(null); }} className="text-gray-400 hover:text-red-600 p-2">
@@ -2342,7 +2337,7 @@ export default function TuxedoAdmin() {
       {/* ── Modal ─────────────────────────────────────────────────────────── */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-start md:items-center justify-center z-50 p-2 md:p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl p-5 md:p-8 lg:p-12 max-w-3xl w-full my-2 md:my-4 shadow-2xl">
+          <div className="bg-white rounded-xl p-5 md:p-8 lg:p-12 max-w-3xl w-full my-2 md:my-4 shadow-2xl">
             <div className="flex justify-between items-center mb-5 md:mb-8">
               <h2 className="text-2xl md:text-4xl font-bold">
                 {modalType === 'customer' ? (formData.id ? `${t.edit} ${t.customer}` : t.addCustomer) :

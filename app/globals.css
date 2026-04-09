@@ -1,75 +1,67 @@
 @import "tailwindcss";
-@variant dark (&:where(.dark, .dark *));
 
 /* Touch optimization */
 * { -webkit-tap-highlight-color: transparent; }
 button, select, input, textarea { touch-action: manipulation; }
 
-/* Print: body class controls which wrapper is shown */
+/* Print */
 @media print {
   body > div > * { display: none !important; }
   body.print-contract > div > #contract-print-wrapper { display: block !important; position: static !important; }
   body.print-analytics > div > #analytics-print-wrapper { display: block !important; position: static !important; }
 }
 
-:root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
 body {
-  background: var(--background);
-  color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  background-color: #f8fafc;
+  color: #0f172a;
 }
 
-/* ── Dark Mode Overrides (triggered by .dark class on wrapper div) ───────── */
-.dark { color-scheme: dark; }
-.dark body { background-color: #0f172a; color: #f1f5f9; }
-.dark .bg-white { background-color: #1e293b !important; color: #f1f5f9; }
-.dark .bg-gray-50 { background-color: #0f172a !important; }
-.dark .bg-gray-100 { background-color: #1e293b !important; }
+/* ── Dark Mode ───────────────────────────────────────────────────────────────
+   .dark class is on the outermost wrapper div (set via React state).
+   These rules override Tailwind utility classes within that wrapper.
+─────────────────────────────────────────────────────────────────────────── */
+.dark { background-color: #0f172a !important; color: #f1f5f9; }
+.dark .bg-white  { background-color: #1e293b !important; color: #f1f5f9; }
+.dark .bg-gray-50  { background-color: #0f172a !important; }
+.dark .bg-gray-100 { background-color: #293548 !important; }
 .dark .bg-gray-200 { background-color: #334155 !important; }
-.dark .hover\:bg-gray-50:hover { background-color: #293548 !important; }
+.dark .hover\:bg-gray-50:hover  { background-color: #293548 !important; }
 .dark .hover\:bg-gray-100:hover { background-color: #334155 !important; }
 .dark .hover\:bg-gray-200:hover { background-color: #475569 !important; }
+.dark .hover\:bg-gray-300:hover { background-color: #64748b !important; }
 .dark .text-gray-900 { color: #f1f5f9 !important; }
 .dark .text-gray-800 { color: #e2e8f0 !important; }
 .dark .text-gray-700 { color: #cbd5e1 !important; }
 .dark .text-gray-600 { color: #94a3b8 !important; }
 .dark .text-gray-500 { color: #64748b !important; }
 .dark .text-gray-400 { color: #94a3b8 !important; }
+.dark .border-b   { border-color: #334155 !important; }
+.dark .border-t   { border-color: #334155 !important; }
+.dark .border-2   { border-color: #475569 !important; }
 .dark .border-gray-200 { border-color: #334155 !important; }
-.dark .border-b { border-color: #334155 !important; }
-.dark .border-t { border-color: #334155 !important; }
-.dark .border-2 { border-color: #475569 !important; }
-.dark input:not([type="file"]), .dark select, .dark textarea {
+.dark .border-gray-100 { border-color: #293548 !important; }
+.dark input:not([type="file"]),
+.dark select,
+.dark textarea {
   background-color: #1e293b !important;
   color: #f1f5f9 !important;
   border-color: #475569 !important;
 }
-.dark input::placeholder, .dark textarea::placeholder { color: #64748b !important; }
-.dark .shadow-xl { box-shadow: 0 8px 24px rgba(0,0,0,0.5) !important; }
+.dark input::placeholder,
+.dark textarea::placeholder { color: #64748b !important; }
+.dark .shadow-xl  { box-shadow: 0 8px 24px rgba(0,0,0,0.5) !important; }
 .dark .shadow-2xl { box-shadow: 0 16px 40px rgba(0,0,0,0.6) !important; }
-.dark .shadow-sm { box-shadow: 0 1px 4px rgba(0,0,0,0.4) !important; }
-.dark .shadow-lg { box-shadow: 0 4px 16px rgba(0,0,0,0.5) !important; }
-.dark .hover\:bg-blue-50:hover { background-color: #0c1e3b !important; }
-.dark .hover\:bg-rose-50:hover { background-color: #2d0a0a !important; }
-.dark .bg-rose-50 { background-color: #1c0808 !important; }
-.dark .bg-sky-50 { background-color: #071728 !important; }
-.dark .bg-blue-50 { background-color: #071728 !important; }
-.dark .border-rose-400 { border-color: #f87171 !important; }
-.dark .border-sky-400 { border-color: #38bdf8 !important; }
-.dark .border-blue-500 { border-color: #3b82f6 !important; }
-.dark .border-blue-400 { border-color: #60a5fa !important; }
+.dark .shadow-sm  { box-shadow: 0 1px 4px rgba(0,0,0,0.4) !important; }
+.dark .shadow-lg  { box-shadow: 0 4px 16px rgba(0,0,0,0.5) !important; }
+.dark .bg-rose-50  { background-color: #1c0808 !important; }
+.dark .bg-sky-50   { background-color: #071728 !important; }
+.dark .bg-blue-50  { background-color: #071728 !important; }
+.dark .hover\:bg-blue-50:hover  { background-color: #0c1e3b !important; }
+.dark .hover\:bg-rose-50:hover  { background-color: #2d0a0a !important; }
 .dark .text-rose-800 { color: #fca5a5 !important; }
 .dark .text-blue-800 { color: #93c5fd !important; }
-.dark .hover\:bg-gray-300:hover { background-color: #475569 !important; }
-.dark .bg-gray-200.text-gray-700 { background-color: #334155 !important; color: #cbd5e1 !important; }
+.dark .border-rose-400 { border-color: #f87171 !important; }
+.dark .border-sky-400  { border-color: #38bdf8 !important; }
+.dark .border-blue-500 { border-color: #3b82f6 !important; }
+.dark .border-blue-400 { border-color: #60a5fa !important; }
