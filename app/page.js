@@ -1221,7 +1221,7 @@ export default function TuxedoAdmin() {
       {/* ── Header ────────────────────────────────────────────────────────── */}
       <header className="bg-slate-900 text-white shadow-2xl sticky top-0 z-40">
         <div className="max-w-full px-3 md:px-6 py-3 md:py-4 flex justify-between items-center gap-2 md:gap-4">
-          <h1 className="text-lg md:text-3xl font-bold whitespace-nowrap">D'Rosel</h1>
+          <h1 className="text-sm md:text-3xl font-bold whitespace-nowrap">D'Rosel Tuxedo Rentals</h1>
           <div className="flex items-center gap-2 md:gap-3 flex-wrap justify-end">
             {/* Store Selector */}
             <select
