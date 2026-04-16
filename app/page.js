@@ -189,11 +189,17 @@ export default function TuxedoAdmin() {
   const [quickPayRental, setQuickPayRental] = useState(null);
   const [quickPayMethod, setQuickPayMethod] = useState('cash');
   const [quickPayOnComplete, setQuickPayOnComplete] = useState(null);
+  const [loginLogo, setLoginLogo] = useState('');
 
   const t = translations[language];
   const today = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })();
 
-  useEffect(() => { checkUser(); }, []);
+  useEffect(() => {
+    checkUser();
+    // Fetch store logo for login page (public bucket)
+    supabase.from('stores').select('logo_url').not('logo_url', 'is', null).limit(1)
+      .then(({ data }) => { if (data?.[0]?.logo_url) setLoginLogo(data[0].logo_url); });
+  }, []);
 
   useEffect(() => {
     if (user) loadData(currentStoreId);
@@ -778,9 +784,10 @@ export default function TuxedoAdmin() {
           <div style={{ position: 'absolute', bottom: '-100px', left: '-60px', width: '350px', height: '350px', borderRadius: '50%', background: 'rgba(99,102,241,0.12)' }} />
           <div className="relative z-10">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center">
-                <span style={{ fontSize: 20 }}>🎩</span>
-              </div>
+              {loginLogo
+                ? <img src={loginLogo} alt="Logo" className="h-12 w-auto object-contain" />
+                : <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center"><span style={{ fontSize: 20 }}>🎩</span></div>
+              }
               <span className="text-lg font-semibold tracking-wide opacity-80">D'Rosel</span>
             </div>
             <h1 className="text-5xl font-bold leading-tight mb-4">
@@ -807,7 +814,10 @@ export default function TuxedoAdmin() {
           <div className="w-full max-w-md">
             {/* Mobile logo */}
             <div className="lg:hidden flex items-center gap-3 mb-10">
-              <span style={{ fontSize: 28 }}>🎩</span>
+              {loginLogo
+                ? <img src={loginLogo} alt="Logo" className="h-10 w-auto object-contain" />
+                : <span style={{ fontSize: 28 }}>🎩</span>
+              }
               <span className="text-2xl font-bold text-slate-800">D'Rosel Tuxedo Rentals</span>
             </div>
 
@@ -1221,7 +1231,10 @@ export default function TuxedoAdmin() {
       {/* ── Header ────────────────────────────────────────────────────────── */}
       <header className="bg-slate-900 text-white shadow-2xl sticky top-0 z-40">
         <div className="max-w-full px-3 md:px-6 py-3 md:py-4 flex justify-between items-center gap-2 md:gap-4">
-          <h1 className="text-sm md:text-3xl font-bold whitespace-nowrap">D'Rosel Tuxedo Rentals</h1>
+          <div className="flex items-center gap-2 md:gap-3 min-w-0">
+            {(() => { const s = stores.find(st => st.id === currentStoreId) || stores[0]; return s?.logo_url ? <img src={s.logo_url} alt="Logo" className="h-8 md:h-10 w-auto object-contain flex-shrink-0" /> : null; })()}
+            <h1 className="text-sm md:text-3xl font-bold whitespace-nowrap">D'Rosel Tuxedo Rentals</h1>
+          </div>
           <div className="flex items-center gap-2 md:gap-3 flex-wrap justify-end">
             {/* Store Selector */}
             <select
