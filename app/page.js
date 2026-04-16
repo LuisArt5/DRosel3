@@ -1340,22 +1340,24 @@ export default function TuxedoAdmin() {
                   ];
                   const hasAssignments = Object.keys(assignments).length > 0 && allContractPeople.length > 1;
 
+                  const colWidths = { name: '45%', size: '15%', rfid: '25%', price: '15%' };
+
                   const itemRow = (item, i) => (
                     <tr key={item.id} style={{ backgroundColor: i % 2 === 0 ? '#f9f9f9' : 'white' }}>
-                      <td style={{ padding: '5px 8px' }}>{item.name}</td>
-                      <td style={{ padding: '5px 8px' }}>{item.size}</td>
-                      <td style={{ padding: '5px 8px', color: '#888' }}>{item.rfid || '—'}</td>
-                      <td style={{ padding: '5px 8px', textAlign: 'right' }}>${item.price?.toFixed(2)}</td>
+                      <td style={{ padding: '5px 8px', width: colWidths.name }}>{item.name}</td>
+                      <td style={{ padding: '5px 8px', width: colWidths.size }}>{item.size}</td>
+                      <td style={{ padding: '5px 8px', width: colWidths.rfid, color: '#888' }}>{item.rfid || '—'}</td>
+                      <td style={{ padding: '5px 8px', width: colWidths.price, textAlign: 'right' }}>${item.price?.toFixed(2)}</td>
                     </tr>
                   );
 
                   const tableHeader = (
                     <thead>
                       <tr style={{ backgroundColor: '#1e3a5f', color: 'white' }}>
-                        <th style={{ padding: '5px 8px', textAlign: 'left' }}>{t.item}</th>
-                        <th style={{ padding: '5px 8px', textAlign: 'left' }}>{t.size}</th>
-                        <th style={{ padding: '5px 8px', textAlign: 'left' }}>RFID</th>
-                        <th style={{ padding: '5px 8px', textAlign: 'right' }}>{t.price}</th>
+                        <th style={{ padding: '5px 8px', textAlign: 'left', width: colWidths.name }}>{t.item}</th>
+                        <th style={{ padding: '5px 8px', textAlign: 'left', width: colWidths.size }}>{t.size}</th>
+                        <th style={{ padding: '5px 8px', textAlign: 'left', width: colWidths.rfid }}>RFID</th>
+                        <th style={{ padding: '5px 8px', textAlign: 'right', width: colWidths.price }}>{t.price}</th>
                       </tr>
                     </thead>
                   );
@@ -1423,36 +1425,22 @@ export default function TuxedoAdmin() {
                 </table>
               </div>
 
-              {/* Signatures */}
-              <div style={{ marginBottom: '10px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '8px' }}>
-                  <div>
+              {/* Signatures — single set */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '10px' }}>
+                <div>
+                  <div style={{ borderBottom: '1px solid #333', height: '32px', marginBottom: '4px' }}></div>
+                  <div style={{ color: '#555', fontSize: '10px' }}>{t.signatureCustomer}</div>
+                </div>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <div style={{ flex: 1 }}>
                     <div style={{ borderBottom: '1px solid #333', height: '32px', marginBottom: '4px' }}></div>
-                    <div style={{ color: '#555', fontSize: '10px' }}>{t.signatureCustomer}: {customer.name}</div>
+                    <div style={{ color: '#555', fontSize: '10px' }}>{t.signatureStaff}</div>
                   </div>
-                  <div style={{ display: 'flex', gap: '12px' }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ borderBottom: '1px solid #333', height: '32px', marginBottom: '4px' }}></div>
-                      <div style={{ color: '#555', fontSize: '10px' }}>{t.signatureStaff}</div>
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ borderBottom: '1px solid #333', height: '32px', marginBottom: '4px' }}></div>
-                      <div style={{ color: '#555', fontSize: '10px' }}>{t.dateSigned}</div>
-                    </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ borderBottom: '1px solid #333', height: '32px', marginBottom: '4px' }}></div>
+                    <div style={{ color: '#555', fontSize: '10px' }}>{t.dateSigned}</div>
                   </div>
                 </div>
-                {additionalPeople.map(p => (
-                  <div key={p.id} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '8px' }}>
-                    <div>
-                      <div style={{ borderBottom: '1px solid #333', height: '32px', marginBottom: '4px' }}></div>
-                      <div style={{ color: '#555', fontSize: '10px' }}>{t.signatureCustomer}: {p.name}</div>
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ borderBottom: '1px solid #333', height: '32px', marginBottom: '4px' }}></div>
-                      <div style={{ color: '#555', fontSize: '10px' }}>{t.dateSigned}</div>
-                    </div>
-                  </div>
-                ))}
               </div>
 
               {/* Terms */}
@@ -1481,20 +1469,28 @@ export default function TuxedoAdmin() {
                   </div>
                 </div>
 
-                {/* Customer + Items summary */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '10px' }}>
-                  <div style={{ border: '1px solid #ddd', borderRadius: '6px', padding: '8px' }}>
-                    <div style={{ fontWeight: 'bold', color: '#1e3a5f', marginBottom: '3px', textTransform: 'uppercase' }}>{language === 'es' ? 'Cliente' : 'Customer'}</div>
-                    <div style={{ fontSize: '13px', fontWeight: 'bold' }}>{customer.name}</div>
-                    <div style={{ color: '#555' }}>{customer.phone}</div>
-                  </div>
-                  <div style={{ border: '1px solid #ddd', borderRadius: '6px', padding: '8px' }}>
-                    <div style={{ fontWeight: 'bold', color: '#1e3a5f', marginBottom: '3px', textTransform: 'uppercase' }}>{language === 'es' ? 'Artículos' : 'Items'}</div>
-                    {rentalItems.map(item => (
-                      <div key={item.id}>{item.name} — {item.size}</div>
-                    ))}
-                  </div>
-                </div>
+                {/* Customer + Items summary — primary customer's items only */}
+                {(() => {
+                  const assignments = contractRental.item_assignments || {};
+                  const hasAsgn = Object.keys(assignments).length > 0 && additionalPeople.length > 0;
+                  const myItems = hasAsgn
+                    ? rentalItems.filter(item => (assignments[item.id] || contractRental.customer_id) === contractRental.customer_id)
+                    : rentalItems;
+                  return (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '10px' }}>
+                      <div style={{ border: '1px solid #ddd', borderRadius: '6px', padding: '8px' }}>
+                        <div style={{ fontWeight: 'bold', color: '#1e3a5f', marginBottom: '3px', textTransform: 'uppercase' }}>{language === 'es' ? 'Cliente' : 'Customer'}</div>
+                        <div style={{ fontSize: '13px', fontWeight: 'bold' }}>{customer.name}</div>
+                        <div style={{ color: '#555' }}>{customer.phone}</div>
+                      </div>
+                      <div style={{ border: '1px solid #ddd', borderRadius: '6px', padding: '8px' }}>
+                        <div style={{ fontWeight: 'bold', color: '#1e3a5f', marginBottom: '3px', textTransform: 'uppercase' }}>{language === 'es' ? 'Artículos' : 'Items'}</div>
+                        {myItems.map(item => <div key={item.id}>{item.name} — {item.size}</div>)}
+                        {myItems.length === 0 && <div style={{ color: '#aaa' }}>—</div>}
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 {/* Measurements grid */}
                 <div style={{ border: '2px solid #1e3a5f', borderRadius: '6px', padding: '10px', marginBottom: '10px' }}>
@@ -1579,17 +1575,27 @@ export default function TuxedoAdmin() {
                       {language === 'es' ? 'Recolección' : 'Pickup'}: {contractRental.pickup_date}
                     </div>
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '10px' }}>
-                    <div style={{ border: '1px solid #ddd', borderRadius: '6px', padding: '8px' }}>
-                      <div style={{ fontWeight: 'bold', color: '#1e3a5f', marginBottom: '3px', textTransform: 'uppercase' }}>{language === 'es' ? 'Cliente' : 'Customer'}</div>
-                      <div style={{ fontSize: '13px', fontWeight: 'bold' }}>{person.name}</div>
-                      <div style={{ color: '#555' }}>{person.phone}</div>
-                    </div>
-                    <div style={{ border: '1px solid #ddd', borderRadius: '6px', padding: '8px' }}>
-                      <div style={{ fontWeight: 'bold', color: '#1e3a5f', marginBottom: '3px', textTransform: 'uppercase' }}>{language === 'es' ? 'Artículos' : 'Items'}</div>
-                      {rentalItems.map(item => <div key={item.id}>{item.name} — {item.size}</div>)}
-                    </div>
-                  </div>
+                  {(() => {
+                    const assignments = contractRental.item_assignments || {};
+                    const hasAsgn = Object.keys(assignments).length > 0;
+                    const myItems = hasAsgn
+                      ? rentalItems.filter(item => assignments[item.id] === person.id)
+                      : rentalItems;
+                    return (
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '10px' }}>
+                        <div style={{ border: '1px solid #ddd', borderRadius: '6px', padding: '8px' }}>
+                          <div style={{ fontWeight: 'bold', color: '#1e3a5f', marginBottom: '3px', textTransform: 'uppercase' }}>{language === 'es' ? 'Cliente' : 'Customer'}</div>
+                          <div style={{ fontSize: '13px', fontWeight: 'bold' }}>{person.name}</div>
+                          <div style={{ color: '#555' }}>{person.phone}</div>
+                        </div>
+                        <div style={{ border: '1px solid #ddd', borderRadius: '6px', padding: '8px' }}>
+                          <div style={{ fontWeight: 'bold', color: '#1e3a5f', marginBottom: '3px', textTransform: 'uppercase' }}>{language === 'es' ? 'Artículos' : 'Items'}</div>
+                          {myItems.map(item => <div key={item.id}>{item.name} — {item.size}</div>)}
+                          {myItems.length === 0 && <div style={{ color: '#aaa' }}>—</div>}
+                        </div>
+                      </div>
+                    );
+                  })()}
                   <div style={{ border: '2px solid #1e3a5f', borderRadius: '6px', padding: '10px', marginBottom: '10px' }}>
                     <div style={{ fontWeight: 'bold', color: '#1e3a5f', marginBottom: '8px', textTransform: 'uppercase' }}>
                       {language === 'es' ? 'Medidas del Cliente' : 'Customer Measurements'}
