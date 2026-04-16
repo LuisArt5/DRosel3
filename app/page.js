@@ -45,7 +45,7 @@ const translations = {
     role: 'Role', admin: 'Admin', staff: 'Staff', viewer: 'Viewer',
     password: 'Password', userManagement: 'User Management',
     search: 'Search', size: 'Size', price: 'Price', rfid: 'RFID',
-    category: 'Category', item: 'Item',
+    category: 'Category', item: 'Item', brand: 'Brand',
     // Store management
     storeManagement: 'Store Management', selectStore: 'Select Store',
     allStores: 'All Stores', storeName: 'Store Name', storeAddress: 'Address',
@@ -121,7 +121,7 @@ const translations = {
     role: 'Rol', admin: 'Administrador', staff: 'Personal', viewer: 'Visualizador',
     password: 'Contraseña', userManagement: 'Gestión de Usuarios',
     search: 'Buscar', size: 'Talla', price: 'Precio', rfid: 'RFID',
-    category: 'Categoría', item: 'Artículo',
+    category: 'Categoría', item: 'Artículo', brand: 'Marca',
     storeManagement: 'Gestión de Tiendas', selectStore: 'Seleccionar Tienda',
     allStores: 'Todas las Tiendas', storeName: 'Nombre de Tienda',
     storeAddress: 'Dirección', storePhone: 'Teléfono', storeLogo: 'Logo',
@@ -491,6 +491,7 @@ export default function TuxedoAdmin() {
         rfid: formData.rfid || null,
         price: parseFloat(formData.price),
         category: formData.category || null,
+        brand: formData.brand || null,
         notes: formData.notes || null,
         store_id: formData.store_id || (currentStoreId !== 'all' ? currentStoreId : null),
       };
@@ -784,16 +785,16 @@ export default function TuxedoAdmin() {
 
   // ─── Inventory Import ─────────────────────────────────────────────────────
   const downloadImportTemplate = () => {
-    const headers = [['Name*', 'Size*', 'Price*', 'Category', 'RFID', 'Notes']];
+    const headers = [['Name*', 'Brand', 'Size*', 'Price*', 'Category', 'RFID', 'Notes']];
     const examples = [
-      ['Black Tuxedo Jacket', '42R', '85', 'Jackets', '', ''],
-      ['White Dress Shirt', 'L', '25', 'Shirts', '', 'French cuffs'],
-      ['Black Bow Tie', 'One Size', '15', 'Accessories', '', ''],
+      ['Black Tuxedo Jacket', 'After Six', '42R', '85', 'Jackets', '', ''],
+      ['White Dress Shirt', 'Calvin Klein', 'L', '25', 'Shirts', '', 'French cuffs'],
+      ['Black Bow Tie', 'Vera Wang', 'One Size', '15', 'Accessories', '', ''],
     ];
     const ws = XLSX.utils.aoa_to_sheet([...headers, ...examples]);
 
     // Column widths
-    ws['!cols'] = [{ wch: 28 }, { wch: 12 }, { wch: 10 }, { wch: 20 }, { wch: 18 }, { wch: 30 }];
+    ws['!cols'] = [{ wch: 28 }, { wch: 18 }, { wch: 12 }, { wch: 10 }, { wch: 20 }, { wch: 18 }, { wch: 30 }];
 
     // Style header row (xlsx-lite approach: write a note in A1 describing required fields)
     const wb = XLSX.utils.book_new();
@@ -805,6 +806,7 @@ export default function TuxedoAdmin() {
       [''],
       ['Required columns (marked with *):'],
       ['  Name*   — Item name (e.g. Black Tuxedo Jacket)'],
+      ['  Brand   — Brand or designer (e.g. After Six, Calvin Klein, Vera Wang)'],
       ['  Size*   — Size (e.g. 42R, L, 10.5, One Size)'],
       ['  Price*  — Rental price as a number (e.g. 85)'],
       [''],
@@ -853,6 +855,7 @@ export default function TuxedoAdmin() {
           return {
             _rowNum: rowNum,
             name: norm.name || '',
+            brand: norm.brand || '',
             size: norm.size || '',
             price: isNaN(price) ? 0 : price,
             category: norm.category || '',
@@ -878,6 +881,7 @@ export default function TuxedoAdmin() {
       const storeId = currentStoreId !== 'all' ? currentStoreId : (stores[0]?.id || null);
       const toInsert = importRows.map(r => ({
         name: r.name,
+        brand: r.brand || null,
         size: r.size,
         price: r.price,
         category: r.category || null,
@@ -1195,7 +1199,12 @@ export default function TuxedoAdmin() {
     c.phone?.includes(searchTerm) || c.email?.toLowerCase().includes(searchTerm));
   const inventoryCategories = ['all', ...Array.from(new Set(inventory.map(i => i.category || '').filter(Boolean))).sort()];
   const filteredInventory = inventory.filter(i => {
-    const matchesSearch = i.name?.toLowerCase().includes(searchTerm.toLowerCase()) || i.rfid?.toLowerCase().includes(searchTerm);
+    const s = searchTerm.toLowerCase();
+    const matchesSearch = !s ||
+      i.name?.toLowerCase().includes(s) ||
+      i.size?.toLowerCase().includes(s) ||
+      i.brand?.toLowerCase().includes(s) ||
+      i.rfid?.toLowerCase().includes(s);
     const matchesCategory = selectedCategory === 'all' || (selectedCategory === '__none__' ? !i.category : i.category === selectedCategory);
     return matchesSearch && matchesCategory;
   });
@@ -2132,6 +2141,7 @@ export default function TuxedoAdmin() {
                     </span>
                   </div>
                   <p className="text-gray-600 mb-1">{t.size}: <b>{item.size}</b></p>
+                  {item.brand && <p className="text-gray-600 mb-1">{t.brand}: <b>{item.brand}</b></p>}
                   {item.category && <p className="text-gray-600 mb-1">{t.category}: <b>{item.category}</b></p>}
                   <p className="text-gray-500 text-sm mb-1">RFID: {item.rfid || '—'}</p>
                   <p className="text-3xl font-bold text-blue-700 my-3">${item.price}</p>
@@ -2818,6 +2828,7 @@ export default function TuxedoAdmin() {
                   <tr>
                     <th className="px-4 py-3 text-left">#</th>
                     <th className="px-4 py-3 text-left">{language === 'es' ? 'Nombre' : 'Name'}</th>
+                    <th className="px-4 py-3 text-left">{language === 'es' ? 'Marca' : 'Brand'}</th>
                     <th className="px-4 py-3 text-left">{language === 'es' ? 'Talla' : 'Size'}</th>
                     <th className="px-4 py-3 text-left">{language === 'es' ? 'Precio' : 'Price'}</th>
                     <th className="px-4 py-3 text-left">{language === 'es' ? 'Categoría' : 'Category'}</th>
@@ -2830,6 +2841,7 @@ export default function TuxedoAdmin() {
                     <tr key={i} className={`border-b ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
                       <td className="px-4 py-2 text-gray-400">{row._rowNum}</td>
                       <td className={`px-4 py-2 font-semibold ${!row.name ? 'text-red-500' : ''}`}>{row.name || '⚠ missing'}</td>
+                      <td className="px-4 py-2 text-gray-600">{row.brand || '—'}</td>
                       <td className={`px-4 py-2 ${!row.size ? 'text-red-500' : ''}`}>{row.size || '⚠ missing'}</td>
                       <td className={`px-4 py-2 ${!row.price ? 'text-red-500' : ''}`}>${row.price}</td>
                       <td className="px-4 py-2 text-gray-600">{row.category || '—'}</td>
@@ -2946,6 +2958,9 @@ export default function TuxedoAdmin() {
                   <input type="text" placeholder={t.name} value={formData.name || ''}
                     onChange={e => setFormData({ ...formData, name: e.target.value })}
                     className="w-full px-6 py-5 border-2 rounded-2xl text-xl min-h-[60px]" required />
+                  <input type="text" placeholder={t.brand} value={formData.brand || ''}
+                    onChange={e => setFormData({ ...formData, brand: e.target.value })}
+                    className="w-full px-6 py-5 border-2 rounded-2xl text-xl min-h-[60px]" />
                   <input type="text" placeholder={t.size} value={formData.size || ''}
                     onChange={e => setFormData({ ...formData, size: e.target.value })}
                     className="w-full px-6 py-5 border-2 rounded-2xl text-xl min-h-[60px]" required />
