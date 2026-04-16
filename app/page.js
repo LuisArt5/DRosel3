@@ -2,11 +2,12 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { createClient } from '@supabase/supabase-js';
+import * as XLSX from 'xlsx';
 import {
   Calendar, Users, Package, DollarSign, BarChart3, Search, Plus, X,
   LogOut, Clock, AlertCircle, CheckCircle, Edit2, Upload, Eye,
   Printer, Trash2, CreditCard, Save, Ruler, Globe, UserCog,
-  Building2, MapPin, Phone, FileText, TrendingUp, Award
+  Building2, MapPin, Phone, FileText, TrendingUp, Award, Download
 } from 'lucide-react';
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -272,6 +273,13 @@ export default function TuxedoAdmin() {
   const [quickPayMethod, setQuickPayMethod] = useState('cash');
   const [quickPayOnComplete, setQuickPayOnComplete] = useState(null);
   const [loginLogo, setLoginLogo] = useState('');
+
+  // ── Import ────────────────────────────────────────────────────────────────
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importRows, setImportRows] = useState([]);
+  const [importErrors, setImportErrors] = useState([]);
+  const [importing, setImporting] = useState(false);
+  const importFileRef = useRef(null);
 
   // ── RFID ──────────────────────────────────────────────────────────────────
   const [rfidScan, setRfidScan] = useState('');
@@ -773,6 +781,128 @@ export default function TuxedoAdmin() {
   };
 
   const getCurrentStore = () => stores.find(s => s.id === currentStoreId);
+
+  // ─── Inventory Import ─────────────────────────────────────────────────────
+  const downloadImportTemplate = () => {
+    const headers = [['Name*', 'Size*', 'Price*', 'Category', 'RFID', 'Notes']];
+    const examples = [
+      ['Black Tuxedo Jacket', '42R', '85', 'Jackets', '', ''],
+      ['White Dress Shirt', 'L', '25', 'Shirts', '', 'French cuffs'],
+      ['Black Bow Tie', 'One Size', '15', 'Accessories', '', ''],
+    ];
+    const ws = XLSX.utils.aoa_to_sheet([...headers, ...examples]);
+
+    // Column widths
+    ws['!cols'] = [{ wch: 28 }, { wch: 12 }, { wch: 10 }, { wch: 20 }, { wch: 18 }, { wch: 30 }];
+
+    // Style header row (xlsx-lite approach: write a note in A1 describing required fields)
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Inventory');
+
+    // Instructions sheet
+    const instructions = [
+      ['INVENTORY IMPORT TEMPLATE'],
+      [''],
+      ['Required columns (marked with *):'],
+      ['  Name*   — Item name (e.g. Black Tuxedo Jacket)'],
+      ['  Size*   — Size (e.g. 42R, L, 10.5, One Size)'],
+      ['  Price*  — Rental price as a number (e.g. 85)'],
+      [''],
+      ['Optional columns:'],
+      ['  Category — Groups items (e.g. Jackets, Shirts, Pants, Shoes, Accessories)'],
+      ['  RFID     — RFID tag ID if already tagged'],
+      ['  Notes    — Any notes about the item'],
+      [''],
+      ['Tips:'],
+      ['  - Do not change the column headers'],
+      ['  - Delete example rows before importing'],
+      ['  - Price must be a number (no $ signs)'],
+      ['  - Duplicates are not checked — review before importing'],
+    ];
+    const wsInstr = XLSX.utils.aoa_to_sheet(instructions);
+    wsInstr['!cols'] = [{ wch: 60 }];
+    XLSX.utils.book_append_sheet(wb, wsInstr, 'Instructions');
+
+    XLSX.writeFile(wb, 'inventory_import_template.xlsx');
+  };
+
+  const handleImportFile = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    e.target.value = '';
+
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const wb = XLSX.read(evt.target.result, { type: 'array' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const raw = XLSX.utils.sheet_to_json(ws, { defval: '' });
+
+        const errors = [];
+        const rows = raw.map((row, idx) => {
+          // Normalize header keys (trim, lowercase)
+          const norm = {};
+          Object.entries(row).forEach(([k, v]) => { norm[k.trim().replace('*', '').toLowerCase()] = String(v).trim(); });
+
+          const rowNum = idx + 2; // +2 because row 1 is header
+          if (!norm.name) errors.push(`Row ${rowNum}: Name is required`);
+          if (!norm.size) errors.push(`Row ${rowNum}: Size is required`);
+          const price = parseFloat(norm.price);
+          if (!norm.price || isNaN(price) || price < 0) errors.push(`Row ${rowNum}: Price must be a valid number`);
+
+          return {
+            _rowNum: rowNum,
+            name: norm.name || '',
+            size: norm.size || '',
+            price: isNaN(price) ? 0 : price,
+            category: norm.category || '',
+            rfid: norm.rfid || '',
+            notes: norm.notes || '',
+          };
+        }).filter(r => r.name || r.size); // skip entirely empty rows
+
+        setImportRows(rows);
+        setImportErrors(errors);
+        setShowImportModal(true);
+      } catch (err) {
+        alert('Error reading file: ' + err.message);
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
+  const commitImport = async () => {
+    if (importErrors.length > 0) return;
+    setImporting(true);
+    try {
+      const storeId = currentStoreId !== 'all' ? currentStoreId : (stores[0]?.id || null);
+      const toInsert = importRows.map(r => ({
+        name: r.name,
+        size: r.size,
+        price: r.price,
+        category: r.category || null,
+        rfid: r.rfid || null,
+        notes: r.notes || null,
+        status: 'available',
+        store_id: storeId,
+      }));
+
+      // Insert in batches of 50
+      for (let i = 0; i < toInsert.length; i += 50) {
+        const { error } = await supabase.from('inventory').insert(toInsert.slice(i, i + 50));
+        if (error) throw error;
+      }
+
+      await loadData();
+      setShowImportModal(false);
+      setImportRows([]);
+      setImportErrors([]);
+      alert(`${toInsert.length} items imported successfully!`);
+    } catch (err) {
+      alert('Import failed: ' + err.message);
+    }
+    setImporting(false);
+  };
 
   // ─── Analytics Data ───────────────────────────────────────────────────────
   const getFilteredRentals = () => {
@@ -1914,10 +2044,21 @@ export default function TuxedoAdmin() {
                   onChange={e => setSearchTerm(e.target.value)}
                   className="px-4 md:px-6 py-3 md:py-4 border-2 rounded-2xl text-base md:text-lg min-h-[48px] md:min-h-[56px] w-44 md:w-60" />
                 {hasPermission('edit') && (
-                  <button onClick={() => openModal('inventory')}
-                    className="flex items-center gap-2 bg-gradient-to-r from-blue-900 to-blue-700 text-white px-5 md:px-8 py-3 md:py-4 rounded-2xl font-bold text-base md:text-xl hover:scale-105 transition min-h-[48px] md:min-h-[56px]">
-                    <Plus size={22} /> {t.addItem}
-                  </button>
+                  <>
+                    <button onClick={downloadImportTemplate}
+                      className="flex items-center gap-2 bg-white border-2 border-blue-700 text-blue-700 px-4 md:px-6 py-3 md:py-4 rounded-2xl font-bold text-sm md:text-base hover:bg-blue-50 transition min-h-[48px] md:min-h-[56px]">
+                      <Download size={18} /> {language === 'es' ? 'Plantilla' : 'Template'}
+                    </button>
+                    <button onClick={() => importFileRef.current?.click()}
+                      className="flex items-center gap-2 bg-green-600 text-white px-4 md:px-6 py-3 md:py-4 rounded-2xl font-bold text-sm md:text-base hover:bg-green-700 transition min-h-[48px] md:min-h-[56px]">
+                      <Upload size={18} /> {language === 'es' ? 'Importar' : 'Import'}
+                    </button>
+                    <input ref={importFileRef} type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={handleImportFile} />
+                    <button onClick={() => openModal('inventory')}
+                      className="flex items-center gap-2 bg-gradient-to-r from-blue-900 to-blue-700 text-white px-5 md:px-8 py-3 md:py-4 rounded-2xl font-bold text-base md:text-xl hover:scale-105 transition min-h-[48px] md:min-h-[56px]">
+                      <Plus size={22} /> {t.addItem}
+                    </button>
+                  </>
                 )}
               </div>
             </div>
@@ -2633,6 +2774,81 @@ export default function TuxedoAdmin() {
               }}
                 className="w-full bg-green-600 text-white py-5 rounded-2xl font-bold text-2xl hover:bg-green-700 transition">
                 {t.payNow} ${getRentalBalance(quickPayRental).toFixed(2)}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Import Preview Modal ──────────────────────────────────────────── */}
+      {showImportModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-start justify-center z-50 p-2 md:p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl p-5 md:p-8 max-w-5xl w-full my-4 shadow-2xl">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl md:text-3xl font-bold">
+                {language === 'es' ? 'Vista Previa — Importar Inventario' : 'Preview — Import Inventory'}
+              </h2>
+              <button onClick={() => { setShowImportModal(false); setImportRows([]); setImportErrors([]); }} className="text-gray-400 hover:text-red-600 p-2">
+                <X size={32} />
+              </button>
+            </div>
+
+            {importErrors.length > 0 && (
+              <div className="bg-red-50 border-2 border-red-300 rounded-2xl p-4 mb-6">
+                <p className="font-bold text-red-700 mb-2 flex items-center gap-2"><AlertCircle size={18} /> {language === 'es' ? 'Errores encontrados — corrígelos antes de importar:' : 'Errors found — fix before importing:'}</p>
+                <ul className="list-disc list-inside text-sm text-red-600 space-y-1">
+                  {importErrors.map((e, i) => <li key={i}>{e}</li>)}
+                </ul>
+              </div>
+            )}
+
+            {importErrors.length === 0 && (
+              <div className="bg-green-50 border-2 border-green-300 rounded-2xl p-4 mb-6 flex items-center gap-3">
+                <CheckCircle size={22} className="text-green-600 flex-shrink-0" />
+                <p className="font-bold text-green-700">
+                  {importRows.length} {language === 'es' ? 'artículos listos para importar' : 'items ready to import'}
+                  {currentStoreId !== 'all' ? ` → ${stores.find(s => s.id === currentStoreId)?.name}` : ` → ${stores[0]?.name || 'first store'}`}
+                </p>
+              </div>
+            )}
+
+            <div className="overflow-x-auto rounded-2xl border border-gray-200 mb-6">
+              <table className="w-full text-sm">
+                <thead className="bg-gradient-to-r from-blue-900 to-blue-700 text-white">
+                  <tr>
+                    <th className="px-4 py-3 text-left">#</th>
+                    <th className="px-4 py-3 text-left">{language === 'es' ? 'Nombre' : 'Name'}</th>
+                    <th className="px-4 py-3 text-left">{language === 'es' ? 'Talla' : 'Size'}</th>
+                    <th className="px-4 py-3 text-left">{language === 'es' ? 'Precio' : 'Price'}</th>
+                    <th className="px-4 py-3 text-left">{language === 'es' ? 'Categoría' : 'Category'}</th>
+                    <th className="px-4 py-3 text-left">RFID</th>
+                    <th className="px-4 py-3 text-left">{language === 'es' ? 'Notas' : 'Notes'}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {importRows.map((row, i) => (
+                    <tr key={i} className={`border-b ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
+                      <td className="px-4 py-2 text-gray-400">{row._rowNum}</td>
+                      <td className={`px-4 py-2 font-semibold ${!row.name ? 'text-red-500' : ''}`}>{row.name || '⚠ missing'}</td>
+                      <td className={`px-4 py-2 ${!row.size ? 'text-red-500' : ''}`}>{row.size || '⚠ missing'}</td>
+                      <td className={`px-4 py-2 ${!row.price ? 'text-red-500' : ''}`}>${row.price}</td>
+                      <td className="px-4 py-2 text-gray-600">{row.category || '—'}</td>
+                      <td className="px-4 py-2 text-gray-400">{row.rfid || '—'}</td>
+                      <td className="px-4 py-2 text-gray-500">{row.notes || '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <button onClick={() => { setShowImportModal(false); setImportRows([]); setImportErrors([]); }}
+                className="px-6 py-4 border-2 border-gray-300 rounded-2xl font-bold hover:bg-gray-50 min-h-[52px]">
+                {language === 'es' ? 'Cancelar' : 'Cancel'}
+              </button>
+              <button onClick={commitImport} disabled={importErrors.length > 0 || importing}
+                className="bg-green-600 text-white px-8 py-4 rounded-2xl font-bold hover:bg-green-700 min-h-[52px] disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2">
+                {importing ? (language === 'es' ? 'Importando…' : 'Importing…') : (language === 'es' ? `Importar ${importRows.length} artículos` : `Import ${importRows.length} items`)}
               </button>
             </div>
           </div>
