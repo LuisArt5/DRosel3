@@ -540,6 +540,7 @@ export default function TuxedoAdmin() {
         notes: formData.notes || '',
         created_by: user.id,
         store_id: formData.store_id || (currentStoreId !== 'all' ? currentStoreId : null),
+        additional_customer_ids: formData.additional_customer_ids || [],
       };
 
       if (formData.id) {
@@ -698,12 +699,13 @@ export default function TuxedoAdmin() {
   // ─── Contract Printing ────────────────────────────────────────────────────
   const printContract = (rental) => {
     setContractRental(rental);
+    // Wait for logo image to load before printing
     setTimeout(() => {
       document.body.classList.add('print-contract');
       const cleanup = () => { document.body.classList.remove('print-contract'); window.removeEventListener('afterprint', cleanup); };
       window.addEventListener('afterprint', cleanup);
       window.print();
-    }, 200);
+    }, 600);
   };
 
   // ─── Helpers ──────────────────────────────────────────────────────────────
@@ -1260,8 +1262,10 @@ export default function TuxedoAdmin() {
       {/* ── Contract Print Div ────────────────────────────────────────────── */}
       <div id="contract-print-wrapper">
         {contractRental && (() => {
-          const store = stores.find(s => s.id === contractRental.store_id);
+          const store = stores.find(s => s.id === contractRental.store_id) || stores[0] || {};
           const customer = customers.find(c => c.id === contractRental.customer_id) || contractRental.customers || {};
+          const additionalPeople = (contractRental.additional_customer_ids || [])
+            .map(id => customers.find(c => c.id === id)).filter(Boolean);
           const rentalItems = (contractRental.item_ids || []).map(id => inventory.find(i => i.id === id)).filter(Boolean);
           const rentalAlts = alterations.filter(a => a.rental_id === contractRental.id);
           const altTotal = rentalAlts.reduce((s, a) => s + (a.cost || 0), 0);
@@ -1295,6 +1299,18 @@ export default function TuxedoAdmin() {
                   <div style={{ color: '#555' }}>{customer.phone}</div>
                   {customer.email && <div style={{ color: '#555' }}>{customer.email}</div>}
                   {customer.address && <div style={{ color: '#555' }}>{customer.address}</div>}
+                  {additionalPeople.length > 0 && (
+                    <div style={{ marginTop: '6px', borderTop: '1px solid #eee', paddingTop: '4px' }}>
+                      <div style={{ fontSize: '9px', fontWeight: 'bold', color: '#888', textTransform: 'uppercase', marginBottom: '3px' }}>
+                        {language === 'es' ? 'Personas Adicionales' : 'Additional People'}
+                      </div>
+                      {additionalPeople.map(p => (
+                        <div key={p.id} style={{ fontSize: '11px' }}>
+                          <b>{p.name}</b>{p.phone ? ` · ${p.phone}` : ''}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div style={{ border: '1px solid #ddd', borderRadius: '6px', padding: '8px' }}>
                   <div style={{ fontWeight: 'bold', color: '#1e3a5f', marginBottom: '4px', textTransform: 'uppercase' }}>{language === 'es' ? 'Detalles del Alquiler' : 'Rental Details'}</div>
@@ -1353,21 +1369,35 @@ export default function TuxedoAdmin() {
               </div>
 
               {/* Signatures */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '10px' }}>
-                <div>
-                  <div style={{ borderBottom: '1px solid #333', height: '32px', marginBottom: '4px' }}></div>
-                  <div style={{ color: '#555' }}>{t.signatureCustomer}</div>
-                </div>
-                <div style={{ display: 'flex', gap: '12px' }}>
-                  <div style={{ flex: 1 }}>
+              <div style={{ marginBottom: '10px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '8px' }}>
+                  <div>
                     <div style={{ borderBottom: '1px solid #333', height: '32px', marginBottom: '4px' }}></div>
-                    <div style={{ color: '#555' }}>{t.signatureStaff}</div>
+                    <div style={{ color: '#555', fontSize: '10px' }}>{t.signatureCustomer}: {customer.name}</div>
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ borderBottom: '1px solid #333', height: '32px', marginBottom: '4px' }}></div>
-                    <div style={{ color: '#555' }}>{t.dateSigned}</div>
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ borderBottom: '1px solid #333', height: '32px', marginBottom: '4px' }}></div>
+                      <div style={{ color: '#555', fontSize: '10px' }}>{t.signatureStaff}</div>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ borderBottom: '1px solid #333', height: '32px', marginBottom: '4px' }}></div>
+                      <div style={{ color: '#555', fontSize: '10px' }}>{t.dateSigned}</div>
+                    </div>
                   </div>
                 </div>
+                {additionalPeople.map(p => (
+                  <div key={p.id} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '8px' }}>
+                    <div>
+                      <div style={{ borderBottom: '1px solid #333', height: '32px', marginBottom: '4px' }}></div>
+                      <div style={{ color: '#555', fontSize: '10px' }}>{t.signatureCustomer}: {p.name}</div>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ borderBottom: '1px solid #333', height: '32px', marginBottom: '4px' }}></div>
+                      <div style={{ color: '#555', fontSize: '10px' }}>{t.dateSigned}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
 
               {/* Terms */}
@@ -1383,6 +1413,7 @@ export default function TuxedoAdmin() {
                 {/* Header */}
                 <div style={{ borderBottom: '2px solid #1e3a5f', paddingBottom: '8px', marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                   <div>
+                    {store?.logo_url && <img src={store.logo_url} alt="logo" style={{ height: '32px', marginBottom: '4px', display: 'block' }} />}
                     <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#1e3a5f' }}>{store?.name || 'Tuxedo Rental'}</div>
                     <div style={{ fontSize: '13px', fontWeight: 'bold', marginTop: '2px' }}>
                       {language === 'es' ? 'HOJA DE MEDIDAS Y ALTERACIONES' : 'MEASUREMENTS & ALTERATIONS WORK SHEET'}
@@ -1475,6 +1506,64 @@ export default function TuxedoAdmin() {
                   </div>
                 </div>
               </div>
+
+              {/* ── Additional People Measurement Sheets ── */}
+              {additionalPeople.map(person => (
+                <div key={person.id} style={{ pageBreakBefore: 'always', paddingTop: '12px', fontFamily: 'Arial, sans-serif', fontSize: '11px', color: '#111' }}>
+                  <div style={{ borderBottom: '2px solid #1e3a5f', paddingBottom: '8px', marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                    <div>
+                      {store?.logo_url && <img src={store.logo_url} alt="logo" style={{ height: '32px', marginBottom: '4px', display: 'block' }} />}
+                      <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#1e3a5f' }}>{store?.name || 'Tuxedo Rental'}</div>
+                      <div style={{ fontSize: '13px', fontWeight: 'bold', marginTop: '2px' }}>
+                        {language === 'es' ? 'HOJA DE MEDIDAS Y ALTERACIONES' : 'MEASUREMENTS & ALTERATIONS WORK SHEET'}
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right', color: '#555' }}>
+                      #{contractRental.id?.slice(-8).toUpperCase()} &nbsp;|&nbsp;
+                      {language === 'es' ? 'Evento' : 'Event'}: {contractRental.event_date || '—'} &nbsp;|&nbsp;
+                      {language === 'es' ? 'Recolección' : 'Pickup'}: {contractRental.pickup_date}
+                    </div>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '10px' }}>
+                    <div style={{ border: '1px solid #ddd', borderRadius: '6px', padding: '8px' }}>
+                      <div style={{ fontWeight: 'bold', color: '#1e3a5f', marginBottom: '3px', textTransform: 'uppercase' }}>{language === 'es' ? 'Cliente' : 'Customer'}</div>
+                      <div style={{ fontSize: '13px', fontWeight: 'bold' }}>{person.name}</div>
+                      <div style={{ color: '#555' }}>{person.phone}</div>
+                    </div>
+                    <div style={{ border: '1px solid #ddd', borderRadius: '6px', padding: '8px' }}>
+                      <div style={{ fontWeight: 'bold', color: '#1e3a5f', marginBottom: '3px', textTransform: 'uppercase' }}>{language === 'es' ? 'Artículos' : 'Items'}</div>
+                      {rentalItems.map(item => <div key={item.id}>{item.name} — {item.size}</div>)}
+                    </div>
+                  </div>
+                  <div style={{ border: '2px solid #1e3a5f', borderRadius: '6px', padding: '10px', marginBottom: '10px' }}>
+                    <div style={{ fontWeight: 'bold', color: '#1e3a5f', marginBottom: '8px', textTransform: 'uppercase' }}>
+                      {language === 'es' ? 'Medidas del Cliente' : 'Customer Measurements'}
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '6px' }}>
+                      {[
+                        { label: language === 'es' ? 'Pecho' : 'Chest', key: 'chest' },
+                        { label: language === 'es' ? 'Cintura' : 'Waist', key: 'waist' },
+                        { label: language === 'es' ? 'Entrepierna' : 'Inseam', key: 'inseam' },
+                        { label: language === 'es' ? 'Talla Saco' : 'Jacket', key: 'jacketSize' },
+                        { label: language === 'es' ? 'Cuello' : 'Neck', key: 'neck' },
+                        { label: language === 'es' ? 'Manga' : 'Sleeve', key: 'sleeve' },
+                      ].map(({ label, key }) => (
+                        <div key={key} style={{ border: '1px solid #ccc', borderRadius: '4px', padding: '6px', background: '#f9f9f9', textAlign: 'center' }}>
+                          <div style={{ fontSize: '9px', color: '#888', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '3px' }}>{label}</div>
+                          <div style={{ fontSize: '18px', fontWeight: 'bold', color: person.measurements?.[key] ? '#1e3a5f' : '#ccc' }}>
+                            {person.measurements?.[key] || '—'}
+                          </div>
+                          {person.measurements?.[key] && <div style={{ fontSize: '9px', color: '#888' }}>{t.inches}</div>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div style={{ marginTop: '10px' }}>
+                    <div style={{ color: '#888', marginBottom: '6px' }}>{language === 'es' ? 'Notas adicionales:' : 'Additional notes:'}</div>
+                    {[1, 2, 3].map(n => <div key={n} style={{ borderBottom: '1px solid #ccc', height: '22px', marginBottom: '6px' }}></div>)}
+                  </div>
+                </div>
+              ))}
             </div>
           );
         })()}
@@ -3249,6 +3338,40 @@ export default function TuxedoAdmin() {
                       </div>
                     </div>
                   )}
+
+                  {/* Additional People */}
+                  <div className="border-2 border-indigo-200 rounded-2xl p-5 bg-indigo-50">
+                    <h3 className="text-base font-bold text-indigo-800 mb-3 flex items-center gap-2">
+                      <Users size={18} /> {language === 'es' ? 'Personas Adicionales' : 'Additional People'}
+                      <span className="text-xs font-normal text-indigo-400 ml-1">
+                        ({language === 'es' ? 'opcional — cada persona obtiene su propia hoja de medidas' : 'optional — each person gets their own measurement sheet'})
+                      </span>
+                    </h3>
+                    {(formData.additional_customer_ids || []).map((cid, idx) => {
+                      const p = customers.find(c => c.id === cid);
+                      return (
+                        <div key={cid} className="flex items-center justify-between bg-white rounded-xl px-4 py-3 mb-2 border border-indigo-200">
+                          <span className="font-semibold">{p?.name} <span className="text-gray-400 font-normal text-sm">· {p?.phone}</span></span>
+                          <button type="button" onClick={() => setFormData({ ...formData, additional_customer_ids: (formData.additional_customer_ids || []).filter(id => id !== cid) })}
+                            className="text-red-400 hover:text-red-600 ml-4"><X size={16} /></button>
+                        </div>
+                      );
+                    })}
+                    <select
+                      value=""
+                      onChange={e => {
+                        if (!e.target.value) return;
+                        const already = formData.additional_customer_ids || [];
+                        if (!already.includes(e.target.value) && e.target.value !== formData.customer_id) {
+                          setFormData({ ...formData, additional_customer_ids: [...already, e.target.value] });
+                        }
+                      }}
+                      className="w-full px-4 py-3 border-2 border-indigo-200 rounded-2xl text-base bg-white min-h-[48px]">
+                      <option value="">+ {language === 'es' ? 'Agregar persona…' : 'Add person…'}</option>
+                      {customers.filter(c => c.id !== formData.customer_id && !(formData.additional_customer_ids || []).includes(c.id))
+                        .map(c => <option key={c.id} value={c.id}>{c.name} · {c.phone}</option>)}
+                    </select>
+                  </div>
 
                   {/* Store assignment in rental */}
                   <div>
