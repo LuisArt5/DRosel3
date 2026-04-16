@@ -1243,8 +1243,20 @@ export default function TuxedoAdmin() {
     const matchesStore = selectedInventoryStore === 'all' || i.store_id === selectedInventoryStore;
     return matchesSearch && matchesCategory && matchesBrand && matchesSize && matchesStore;
   });
-  const filteredRentals = rentals.filter(r =>
-    r.customers?.name?.toLowerCase().includes(searchTerm.toLowerCase()) || searchTerm === '');
+  const filteredRentals = rentals.filter(r => {
+    if (searchTerm === '') return true;
+    const term = searchTerm.toLowerCase();
+    if (r.customers?.name?.toLowerCase().includes(term)) return true;
+    // Also match any additional person on the contract
+    if (r.additional_customer_ids?.length) {
+      const addlMatch = r.additional_customer_ids.some(id => {
+        const c = customers.find(c => c.id === id);
+        return c?.name?.toLowerCase().includes(term);
+      });
+      if (addlMatch) return true;
+    }
+    return false;
+  });
   const filteredUsers = users.filter(u => u.email?.toLowerCase().includes(searchTerm.toLowerCase()));
 
   const totalRevenue = rentals.reduce((s, r) => s + (r.total || 0), 0);
