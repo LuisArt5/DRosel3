@@ -788,32 +788,37 @@ export default function TuxedoAdmin() {
 
   // ─── Inventory Import ─────────────────────────────────────────────────────
   const downloadImportTemplate = () => {
-    const headers = [['Name*', 'Brand', 'Size*', 'Price*', 'Category', 'RFID', 'Notes']];
+    const storeNames = stores.map(s => s.name);
+    const firstStore = storeNames[0] || 'Main Store';
+    const secondStore = storeNames[1] || firstStore;
+
+    const headers = [['Name*', 'Brand', 'Size*', 'Price*', 'Category', 'RFID', 'Notes', 'Store*']];
     const examples = [
-      ['Black Tuxedo Jacket', 'After Six', '42R', '85', 'Jackets', '', ''],
-      ['White Dress Shirt', 'Calvin Klein', 'L', '25', 'Shirts', '', 'French cuffs'],
-      ['Black Bow Tie', 'Vera Wang', 'One Size', '15', 'Accessories', '', ''],
+      ['Black Tuxedo Jacket', 'After Six', '42R', '85', 'Jackets', '', '', firstStore],
+      ['White Dress Shirt', 'Calvin Klein', 'L', '25', 'Shirts', '', 'French cuffs', firstStore],
+      ['Black Bow Tie', 'Vera Wang', 'One Size', '15', 'Accessories', '', '', secondStore],
     ];
     const ws = XLSX.utils.aoa_to_sheet([...headers, ...examples]);
 
     // Column widths
-    ws['!cols'] = [{ wch: 28 }, { wch: 18 }, { wch: 12 }, { wch: 10 }, { wch: 20 }, { wch: 18 }, { wch: 30 }];
+    ws['!cols'] = [{ wch: 28 }, { wch: 18 }, { wch: 12 }, { wch: 10 }, { wch: 20 }, { wch: 18 }, { wch: 30 }, { wch: 22 }];
 
-    // Style header row (xlsx-lite approach: write a note in A1 describing required fields)
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Inventory');
 
-    // Instructions sheet
+    // Instructions sheet — include actual store names
     const instructions = [
       ['INVENTORY IMPORT TEMPLATE'],
       [''],
       ['Required columns (marked with *):'],
       ['  Name*   — Item name (e.g. Black Tuxedo Jacket)'],
-      ['  Brand   — Brand or designer (e.g. After Six, Calvin Klein, Vera Wang)'],
       ['  Size*   — Size (e.g. 42R, L, 10.5, One Size)'],
       ['  Price*  — Rental price as a number (e.g. 85)'],
+      ['  Store*  — Exact store name. Your stores:'],
+      ...storeNames.map(n => [`             • ${n}`]),
       [''],
       ['Optional columns:'],
+      ['  Brand    — Brand or designer (e.g. After Six, Calvin Klein, Vera Wang)'],
       ['  Category — Groups items (e.g. Jackets, Shirts, Pants, Shoes, Accessories)'],
       ['  RFID     — RFID tag ID if already tagged'],
       ['  Notes    — Any notes about the item'],
@@ -822,6 +827,7 @@ export default function TuxedoAdmin() {
       ['  - Do not change the column headers'],
       ['  - Delete example rows before importing'],
       ['  - Price must be a number (no $ signs)'],
+      ['  - Store name must match exactly (copy from the list above)'],
       ['  - Duplicates are not checked — review before importing'],
     ];
     const wsInstr = XLSX.utils.aoa_to_sheet(instructions);
@@ -855,6 +861,11 @@ export default function TuxedoAdmin() {
           const price = parseFloat(norm.price);
           if (!norm.price || isNaN(price) || price < 0) errors.push(`Row ${rowNum}: Price must be a valid number`);
 
+          // Match store by name (case-insensitive)
+          const storeMatch = stores.find(s => s.name.toLowerCase() === (norm.store || '').toLowerCase());
+          if (!norm.store) errors.push(`Row ${rowNum}: Store is required`);
+          else if (!storeMatch) errors.push(`Row ${rowNum}: Store "${norm.store}" not found. Valid stores: ${stores.map(s => s.name).join(', ')}`);
+
           return {
             _rowNum: rowNum,
             name: norm.name || '',
@@ -864,6 +875,8 @@ export default function TuxedoAdmin() {
             category: norm.category || '',
             rfid: norm.rfid || '',
             notes: norm.notes || '',
+            store: norm.store || '',
+            store_id: storeMatch?.id || null,
           };
         }).filter(r => r.name || r.size); // skip entirely empty rows
 
@@ -881,7 +894,6 @@ export default function TuxedoAdmin() {
     if (importErrors.length > 0) return;
     setImporting(true);
     try {
-      const storeId = currentStoreId !== 'all' ? currentStoreId : (stores[0]?.id || null);
       const toInsert = importRows.map(r => ({
         name: r.name,
         brand: r.brand || null,
@@ -891,7 +903,7 @@ export default function TuxedoAdmin() {
         rfid: r.rfid || null,
         notes: r.notes || null,
         status: 'available',
-        store_id: storeId,
+        store_id: r.store_id,
       }));
 
       // Insert in batches of 50
@@ -2929,6 +2941,7 @@ export default function TuxedoAdmin() {
                     <th className="px-4 py-3 text-left">{language === 'es' ? 'Categoría' : 'Category'}</th>
                     <th className="px-4 py-3 text-left">RFID</th>
                     <th className="px-4 py-3 text-left">{language === 'es' ? 'Notas' : 'Notes'}</th>
+                    <th className="px-4 py-3 text-left">{language === 'es' ? 'Tienda' : 'Store'}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -2942,6 +2955,7 @@ export default function TuxedoAdmin() {
                       <td className="px-4 py-2 text-gray-600">{row.category || '—'}</td>
                       <td className="px-4 py-2 text-gray-400">{row.rfid || '—'}</td>
                       <td className="px-4 py-2 text-gray-500">{row.notes || '—'}</td>
+                      <td className={`px-4 py-2 font-semibold ${!row.store_id ? 'text-red-500' : 'text-gray-700'}`}>{row.store || '⚠ missing'}</td>
                     </tr>
                   ))}
                 </tbody>
