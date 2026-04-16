@@ -269,6 +269,8 @@ export default function TuxedoAdmin() {
   const [billingAmount, setBillingAmount] = useState('');
   const [billingMethod, setBillingMethod] = useState('cash');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedBrand, setSelectedBrand] = useState('all');
+  const [selectedSize, setSelectedSize] = useState('all');
   const [quickPayRental, setQuickPayRental] = useState(null);
   const [quickPayMethod, setQuickPayMethod] = useState('cash');
   const [quickPayOnComplete, setQuickPayOnComplete] = useState(null);
@@ -1198,6 +1200,8 @@ export default function TuxedoAdmin() {
     c.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     c.phone?.includes(searchTerm) || c.email?.toLowerCase().includes(searchTerm));
   const inventoryCategories = ['all', ...Array.from(new Set(inventory.map(i => i.category || '').filter(Boolean))).sort()];
+  const inventoryBrands = ['all', ...Array.from(new Set(inventory.map(i => i.brand || '').filter(Boolean))).sort()];
+  const inventorySizes = ['all', ...Array.from(new Set(inventory.map(i => i.size || '').filter(Boolean))).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))];
   const filteredInventory = inventory.filter(i => {
     const s = searchTerm.toLowerCase();
     const matchesSearch = !s ||
@@ -1206,7 +1210,9 @@ export default function TuxedoAdmin() {
       i.brand?.toLowerCase().includes(s) ||
       i.rfid?.toLowerCase().includes(s);
     const matchesCategory = selectedCategory === 'all' || (selectedCategory === '__none__' ? !i.category : i.category === selectedCategory);
-    return matchesSearch && matchesCategory;
+    const matchesBrand = selectedBrand === 'all' || i.brand === selectedBrand;
+    const matchesSize = selectedSize === 'all' || i.size === selectedSize;
+    return matchesSearch && matchesCategory && matchesBrand && matchesSize;
   });
   const filteredRentals = rentals.filter(r =>
     r.customers?.name?.toLowerCase().includes(searchTerm.toLowerCase()) || searchTerm === '');
@@ -2072,30 +2078,87 @@ export default function TuxedoAdmin() {
               </div>
             </div>
 
-            {/* Category filter pills */}
-            <div className="flex gap-2 flex-wrap mb-6">
-              {inventoryCategories.map(cat => (
-                <button key={cat} onClick={() => setSelectedCategory(cat)}
-                  className={`px-5 py-2 rounded-full font-bold text-sm transition min-h-[40px] ${
-                    selectedCategory === cat
-                      ? 'bg-blue-600 text-white shadow-lg'
-                      : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-blue-400'
-                  }`}>
-                  {cat === 'all' ? t.allCategories : cat}
-                  <span className="ml-2 opacity-70 font-normal">
-                    ({inventory.filter(i => cat === 'all' ? true : (i.category || '') === cat).length})
+            {/* Filter pills */}
+            <div className="space-y-3 mb-6">
+              {/* Category */}
+              <div className="flex gap-2 flex-wrap items-center">
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest w-16 flex-shrink-0">{t.category}</span>
+                {inventoryCategories.map(cat => (
+                  <button key={cat} onClick={() => setSelectedCategory(cat)}
+                    className={`px-4 py-1.5 rounded-full font-bold text-sm transition min-h-[36px] ${
+                      selectedCategory === cat
+                        ? 'bg-blue-600 text-white shadow'
+                        : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-blue-400'
+                    }`}>
+                    {cat === 'all' ? t.allCategories : cat}
+                    <span className="ml-1.5 opacity-60 font-normal text-xs">
+                      ({inventory.filter(i => cat === 'all' ? true : (i.category || '') === cat).length})
+                    </span>
+                  </button>
+                ))}
+                {inventory.some(i => !i.category) && (
+                  <button onClick={() => setSelectedCategory('__none__')}
+                    className={`px-4 py-1.5 rounded-full font-bold text-sm transition min-h-[36px] ${
+                      selectedCategory === '__none__'
+                        ? 'bg-gray-600 text-white shadow'
+                        : 'bg-white text-gray-500 border-2 border-gray-200 hover:border-gray-400'
+                    }`}>
+                    {t.uncategorized} <span className="ml-1.5 opacity-60 font-normal text-xs">({inventory.filter(i => !i.category).length})</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Brand */}
+              {inventoryBrands.length > 1 && (
+                <div className="flex gap-2 flex-wrap items-center">
+                  <span className="text-xs font-bold text-gray-400 uppercase tracking-widest w-16 flex-shrink-0">{t.brand}</span>
+                  {inventoryBrands.map(b => (
+                    <button key={b} onClick={() => setSelectedBrand(b)}
+                      className={`px-4 py-1.5 rounded-full font-bold text-sm transition min-h-[36px] ${
+                        selectedBrand === b
+                          ? 'bg-indigo-600 text-white shadow'
+                          : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-indigo-400'
+                      }`}>
+                      {b === 'all' ? (language === 'es' ? 'Todas las Marcas' : 'All Brands') : b}
+                      <span className="ml-1.5 opacity-60 font-normal text-xs">
+                        ({inventory.filter(i => b === 'all' ? true : i.brand === b).length})
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Size */}
+              {inventorySizes.length > 1 && (
+                <div className="flex gap-2 flex-wrap items-center">
+                  <span className="text-xs font-bold text-gray-400 uppercase tracking-widest w-16 flex-shrink-0">{t.size}</span>
+                  {inventorySizes.map(sz => (
+                    <button key={sz} onClick={() => setSelectedSize(sz)}
+                      className={`px-4 py-1.5 rounded-full font-bold text-sm transition min-h-[36px] ${
+                        selectedSize === sz
+                          ? 'bg-sky-600 text-white shadow'
+                          : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-sky-400'
+                      }`}>
+                      {sz === 'all' ? (language === 'es' ? 'Todas las Tallas' : 'All Sizes') : sz}
+                      <span className="ml-1.5 opacity-60 font-normal text-xs">
+                        ({inventory.filter(i => sz === 'all' ? true : i.size === sz).length})
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Active filter count + clear */}
+              {(selectedCategory !== 'all' || selectedBrand !== 'all' || selectedSize !== 'all' || searchTerm) && (
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-gray-500">
+                    {filteredInventory.length} {language === 'es' ? 'resultado(s)' : 'result(s)'}
                   </span>
-                </button>
-              ))}
-              {inventory.some(i => !i.category) && (
-                <button onClick={() => setSelectedCategory('__none__')}
-                  className={`px-5 py-2 rounded-full font-bold text-sm transition min-h-[40px] ${
-                    selectedCategory === '__none__'
-                      ? 'bg-gray-600 text-white shadow-lg'
-                      : 'bg-white text-gray-500 border-2 border-gray-200 hover:border-gray-400'
-                  }`}>
-                  {t.uncategorized} ({inventory.filter(i => !i.category).length})
-                </button>
+                  <button onClick={() => { setSelectedCategory('all'); setSelectedBrand('all'); setSelectedSize('all'); setSearchTerm(''); }}
+                    className="text-sm font-bold text-red-500 hover:text-red-700 flex items-center gap-1">
+                    <X size={14} /> {language === 'es' ? 'Limpiar filtros' : 'Clear filters'}
+                  </button>
+                </div>
               )}
             </div>
 
