@@ -50,6 +50,7 @@ const translations = {
     storeManagement: 'Store Management', selectStore: 'Select Store',
     allStores: 'All Stores', storeName: 'Store Name', storeAddress: 'Address',
     storePhone: 'Phone', storeLogo: 'Logo', termsAndConditions: 'Terms & Conditions',
+    storeRfc: 'RFC Number', storeCurp: 'CURP Number',
     // Customer extended
     address: 'Address', measurements: 'Measurements', chest: 'Chest',
     waist: 'Waist', inseam: 'Inseam', jacketSize: 'Jacket Size',
@@ -126,6 +127,7 @@ const translations = {
     allStores: 'Todas las Tiendas', storeName: 'Nombre de Tienda',
     storeAddress: 'Dirección', storePhone: 'Teléfono', storeLogo: 'Logo',
     termsAndConditions: 'Términos y Condiciones',
+    storeRfc: 'Número RFC', storeCurp: 'Número CURP',
     address: 'Dirección', measurements: 'Medidas', chest: 'Pecho',
     waist: 'Cintura', inseam: 'Entrepierna', jacketSize: 'Talla de Saco',
     neck: 'Cuello', sleeve: 'Manga', customerNotes: 'Notas',
@@ -603,6 +605,8 @@ export default function TuxedoAdmin() {
         address: formData.address || null,
         phone: formData.phone || null,
         logo_url: logo_url || null,
+        rfc: formData.rfc || null,
+        curp: formData.curp || null,
         terms_and_conditions: formData.terms_and_conditions || '',
       };
 
@@ -1271,6 +1275,8 @@ export default function TuxedoAdmin() {
                   <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#1e3a5f' }}>{store?.name || 'Tuxedo Rental'}</div>
                   {store?.address && <div style={{ color: '#555' }}>{store.address}</div>}
                   {store?.phone && <div style={{ color: '#555' }}>{store.phone}</div>}
+                  {store?.rfc && <div style={{ color: '#555', fontSize: '10px' }}>RFC: <b>{store.rfc}</b></div>}
+                  {store?.curp && <div style={{ color: '#555', fontSize: '10px' }}>CURP: <b>{store.curp}</b></div>}
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#1e3a5f' }}>{t.rentalContract}</div>
@@ -3149,6 +3155,14 @@ export default function TuxedoAdmin() {
                   <input type="tel" placeholder={t.storePhone} value={formData.phone || ''}
                     onChange={e => setFormData({ ...formData, phone: e.target.value })}
                     className="w-full px-6 py-5 border-2 rounded-2xl text-xl min-h-[60px]" />
+                  <input type="text" placeholder={t.storeRfc} value={formData.rfc || ''}
+                    onChange={e => setFormData({ ...formData, rfc: e.target.value.toUpperCase() })}
+                    className="w-full px-6 py-5 border-2 rounded-2xl text-xl min-h-[60px]"
+                    maxLength={13} style={{ fontFamily: 'monospace', letterSpacing: '0.1em' }} />
+                  <input type="text" placeholder={t.storeCurp} value={formData.curp || ''}
+                    onChange={e => setFormData({ ...formData, curp: e.target.value.toUpperCase() })}
+                    className="w-full px-6 py-5 border-2 rounded-2xl text-xl min-h-[60px]"
+                    maxLength={18} style={{ fontFamily: 'monospace', letterSpacing: '0.1em' }} />
                   <div>
                     <label className="block text-lg font-bold mb-2">{t.storeLogo}</label>
                     {formData.logo_url && <img src={formData.logo_url} alt="logo" className="h-16 mb-3 rounded-xl object-contain border" />}
