@@ -422,7 +422,7 @@ export default function TuxedoAdmin() {
       setFormData(data);
     }
     setShowModal(true);
-    if (type === 'rental' && data.id) setSelectedItems(data.item_ids || []);
+    if (type === 'rental' && data.id) { setSelectedItems(data.item_ids || []); }
   };
 
   const closeModal = () => { setShowModal(false); setFormData({}); setSelectedItems([]); };
@@ -541,6 +541,7 @@ export default function TuxedoAdmin() {
         created_by: user.id,
         store_id: formData.store_id || (currentStoreId !== 'all' ? currentStoreId : null),
         additional_customer_ids: formData.additional_customer_ids || [],
+        item_assignments: formData.item_assignments || {},
       };
 
       if (formData.id) {
@@ -1321,35 +1322,82 @@ export default function TuxedoAdmin() {
                 </div>
               </div>
 
-              {/* Items Table */}
+              {/* Items Table — grouped by person when assignments exist */}
               <div style={{ marginBottom: '10px' }}>
                 <div style={{ fontWeight: 'bold', color: '#1e3a5f', marginBottom: '4px', textTransform: 'uppercase' }}>{t.contractItems}</div>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
-                  <thead>
-                    <tr style={{ backgroundColor: '#1e3a5f', color: 'white' }}>
-                      <th style={{ padding: '5px 8px', textAlign: 'left' }}>{t.item}</th>
-                      <th style={{ padding: '5px 8px', textAlign: 'left' }}>{t.size}</th>
-                      <th style={{ padding: '5px 8px', textAlign: 'left' }}>RFID</th>
-                      <th style={{ padding: '5px 8px', textAlign: 'right' }}>{t.price}</th>
+                {(() => {
+                  const assignments = contractRental.item_assignments || {};
+                  const allContractPeople = [
+                    { id: contractRental.customer_id, name: customer.name },
+                    ...additionalPeople.map(p => ({ id: p.id, name: p.name })),
+                  ];
+                  const hasAssignments = Object.keys(assignments).length > 0 && allContractPeople.length > 1;
+
+                  const itemRow = (item, i) => (
+                    <tr key={item.id} style={{ backgroundColor: i % 2 === 0 ? '#f9f9f9' : 'white' }}>
+                      <td style={{ padding: '5px 8px' }}>{item.name}</td>
+                      <td style={{ padding: '5px 8px' }}>{item.size}</td>
+                      <td style={{ padding: '5px 8px', color: '#888' }}>{item.rfid || '—'}</td>
+                      <td style={{ padding: '5px 8px', textAlign: 'right' }}>${item.price?.toFixed(2)}</td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {rentalItems.map((item, i) => (
-                      <tr key={item.id} style={{ backgroundColor: i % 2 === 0 ? '#f9f9f9' : 'white' }}>
-                        <td style={{ padding: '5px 8px' }}>{item.name}</td>
-                        <td style={{ padding: '5px 8px' }}>{item.size}</td>
-                        <td style={{ padding: '5px 8px', color: '#888' }}>{item.rfid || '—'}</td>
-                        <td style={{ padding: '5px 8px', textAlign: 'right' }}>${item.price?.toFixed(2)}</td>
+                  );
+
+                  const tableHeader = (
+                    <thead>
+                      <tr style={{ backgroundColor: '#1e3a5f', color: 'white' }}>
+                        <th style={{ padding: '5px 8px', textAlign: 'left' }}>{t.item}</th>
+                        <th style={{ padding: '5px 8px', textAlign: 'left' }}>{t.size}</th>
+                        <th style={{ padding: '5px 8px', textAlign: 'left' }}>RFID</th>
+                        <th style={{ padding: '5px 8px', textAlign: 'right' }}>{t.price}</th>
                       </tr>
-                    ))}
-                    {rentalAlts.length > 0 && rentalAlts.map((alt, i) => (
-                      <tr key={alt.id} style={{ backgroundColor: i % 2 === 0 ? '#fff8f0' : '#fff3e0' }}>
-                        <td colSpan={3} style={{ padding: '5px 8px', fontStyle: 'italic' }}>{t.alterations}: {alt.description}</td>
-                        <td style={{ padding: '5px 8px', textAlign: 'right' }}>${alt.cost?.toFixed(2)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                  );
+
+                  if (hasAssignments) {
+                    return allContractPeople.map(person => {
+                      const personItems = rentalItems.filter(item => (assignments[item.id] || contractRental.customer_id) === person.id);
+                      if (personItems.length === 0) return null;
+                      return (
+                        <div key={person.id} style={{ marginBottom: '8px' }}>
+                          <div style={{ backgroundColor: '#e8edf5', padding: '4px 8px', fontWeight: 'bold', fontSize: '11px', color: '#1e3a5f', borderRadius: '4px 4px 0 0' }}>
+                            {person.name}
+                          </div>
+                          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
+                            {tableHeader}
+                            <tbody>{personItems.map(itemRow)}</tbody>
+                          </table>
+                        </div>
+                      );
+                    });
+                  }
+
+                  return (
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
+                      {tableHeader}
+                      <tbody>
+                        {rentalItems.map(itemRow)}
+                        {rentalAlts.length > 0 && rentalAlts.map((alt, i) => (
+                          <tr key={alt.id} style={{ backgroundColor: i % 2 === 0 ? '#fff8f0' : '#fff3e0' }}>
+                            <td colSpan={3} style={{ padding: '5px 8px', fontStyle: 'italic' }}>{t.alterations}: {alt.description}</td>
+                            <td style={{ padding: '5px 8px', textAlign: 'right' }}>${alt.cost?.toFixed(2)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  );
+                })()}
+                {rentalAlts.length > 0 && (contractRental.item_assignments && Object.keys(contractRental.item_assignments).length > 0 && additionalPeople.length > 0) && (
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px', marginTop: '4px' }}>
+                    <tbody>
+                      {rentalAlts.map((alt, i) => (
+                        <tr key={alt.id} style={{ backgroundColor: i % 2 === 0 ? '#fff8f0' : '#fff3e0' }}>
+                          <td colSpan={3} style={{ padding: '5px 8px', fontStyle: 'italic' }}>{t.alterations}: {alt.description}</td>
+                          <td style={{ padding: '5px 8px', textAlign: 'right' }}>${alt.cost?.toFixed(2)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
               </div>
 
               {/* Totals */}
@@ -3384,28 +3432,111 @@ export default function TuxedoAdmin() {
                     </select>
                   </div>
 
-                  <div>
-                    <label className="block text-lg font-bold mb-2">{t.items}</label>
-                    <div className="max-h-64 overflow-y-auto border-2 rounded-2xl p-4 space-y-2 bg-gray-50">
-                      {inventory.filter(i => {
-                        const rentalStoreId = formData.store_id || (currentStoreId !== 'all' ? currentStoreId : null);
-                        const storeMatch = rentalStoreId ? i.store_id === rentalStoreId : true;
-                        return storeMatch && (i.status === 'available' || selectedItems.includes(i.id));
-                      }).map(item => (
-                        <label key={item.id} className="flex items-center gap-4 cursor-pointer hover:bg-white p-3 rounded-xl transition min-h-[52px]">
-                          <input type="checkbox" checked={selectedItems.includes(item.id)}
-                            onChange={e => setSelectedItems(e.target.checked ? [...selectedItems, item.id] : selectedItems.filter(id => id !== item.id))}
-                            className="w-6 h-6" />
-                          <span className="text-base">{item.name} — {t.size} {item.size} — ${item.price}</span>
-                        </label>
-                      ))}
-                    </div>
-                    {selectedItems.length > 0 && (
-                      <p className="mt-2 text-lg font-bold text-blue-600">
-                        {selectedItems.length} {t.items} · {t.total}: ${selectedItems.reduce((s, id) => { const i = inventory.find(x => x.id === id); return s + (i?.price || 0); }, 0).toFixed(2)}
-                      </p>
-                    )}
-                  </div>
+                  {/* Items with RFID scan + per-person assignment */}
+                  {(() => {
+                    const rentalStoreId = formData.store_id || (currentStoreId !== 'all' ? currentStoreId : null);
+                    const availableItems = inventory.filter(i => {
+                      const storeMatch = rentalStoreId ? i.store_id === rentalStoreId : true;
+                      return storeMatch && (i.status === 'available' || selectedItems.includes(i.id));
+                    });
+                    const allPeople = [
+                      ...(formData.customer_id ? [{ id: formData.customer_id, name: customers.find(c => c.id === formData.customer_id)?.name || t.customer }] : []),
+                      ...(formData.additional_customer_ids || []).map(id => ({ id, name: customers.find(c => c.id === id)?.name || id })),
+                    ];
+                    const multiPerson = allPeople.length > 1;
+                    const personColors = ['bg-blue-100 text-blue-800', 'bg-indigo-100 text-indigo-800', 'bg-violet-100 text-violet-800', 'bg-pink-100 text-pink-800', 'bg-amber-100 text-amber-800'];
+
+                    const addItemById = (itemId) => {
+                      if (!selectedItems.includes(itemId)) {
+                        setSelectedItems(prev => [...prev, itemId]);
+                        // Auto-assign to primary customer if only one person
+                        if (allPeople.length === 1) {
+                          setFormData(fd => ({ ...fd, item_assignments: { ...(fd.item_assignments || {}), [itemId]: allPeople[0].id } }));
+                        }
+                      }
+                    };
+
+                    return (
+                      <div>
+                        <label className="block text-lg font-bold mb-2">{t.items}</label>
+
+                        {/* RFID scan bar */}
+                        <div className="flex gap-2 mb-3">
+                          <input
+                            type="text"
+                            placeholder={language === 'es' ? '⌖ Escanea RFID para agregar artículo…' : '⌖ Scan RFID to add item…'}
+                            className="flex-1 px-4 py-3 border-2 border-blue-200 rounded-2xl text-base focus:outline-none focus:border-blue-600 min-h-[48px]"
+                            autoComplete="off"
+                            onKeyDown={e => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                const tag = e.target.value.trim();
+                                if (!tag) return;
+                                const item = availableItems.find(i => i.rfid === tag) || inventory.find(i => i.rfid === tag);
+                                if (!item) { alert(language === 'es' ? `Tag no encontrado: ${tag}` : `Tag not found: ${tag}`); }
+                                else if (!availableItems.find(i => i.id === item.id)) { alert(language === 'es' ? `${item.name} no está disponible en esta tienda` : `${item.name} is not available at this store`); }
+                                else { addItemById(item.id); }
+                                e.target.value = '';
+                              }
+                            }}
+                          />
+                        </div>
+
+                        {/* Item list */}
+                        <div className="max-h-64 overflow-y-auto border-2 rounded-2xl p-3 space-y-1 bg-gray-50">
+                          {availableItems.map(item => {
+                            const checked = selectedItems.includes(item.id);
+                            const assignedTo = (formData.item_assignments || {})[item.id] || (allPeople[0]?.id ?? '');
+                            const personIdx = allPeople.findIndex(p => p.id === assignedTo);
+                            return (
+                              <div key={item.id} className={`flex items-center gap-3 p-3 rounded-xl transition ${checked ? 'bg-white shadow-sm' : 'hover:bg-white'}`}>
+                                <input type="checkbox" checked={checked}
+                                  onChange={e => {
+                                    if (e.target.checked) {
+                                      addItemById(item.id);
+                                    } else {
+                                      setSelectedItems(prev => prev.filter(id => id !== item.id));
+                                      setFormData(fd => {
+                                        const a = { ...(fd.item_assignments || {}) };
+                                        delete a[item.id];
+                                        return { ...fd, item_assignments: a };
+                                      });
+                                    }
+                                  }}
+                                  className="w-5 h-5 flex-shrink-0" />
+                                <span className="flex-1 text-sm md:text-base">{item.name} — {t.size} {item.size}{item.brand ? ` — ${item.brand}` : ''} <span className="text-gray-400">· ${item.price}</span></span>
+                                {item.rfid && <span className="text-xs text-gray-300 font-mono hidden md:block">{item.rfid}</span>}
+                                {/* Person picker — only shown when item is checked and multiple people */}
+                                {checked && multiPerson && (
+                                  <select
+                                    value={assignedTo}
+                                    onClick={e => e.stopPropagation()}
+                                    onChange={e => setFormData(fd => ({ ...fd, item_assignments: { ...(fd.item_assignments || {}), [item.id]: e.target.value } }))}
+                                    className={`text-xs font-bold px-2 py-1 rounded-full border-0 cursor-pointer min-w-[110px] ${personColors[Math.max(0, personIdx) % personColors.length]}`}>
+                                    {allPeople.map((p, i) => (
+                                      <option key={p.id} value={p.id}>{p.name}</option>
+                                    ))}
+                                  </select>
+                                )}
+                                {checked && !multiPerson && allPeople[0] && (
+                                  <span className={`text-xs font-bold px-2 py-1 rounded-full ${personColors[0]}`}>{allPeople[0].name}</span>
+                                )}
+                              </div>
+                            );
+                          })}
+                          {availableItems.length === 0 && (
+                            <p className="text-center text-gray-400 py-4 text-sm">{language === 'es' ? 'Sin artículos disponibles' : 'No items available'}</p>
+                          )}
+                        </div>
+
+                        {selectedItems.length > 0 && (
+                          <p className="mt-2 text-base font-bold text-blue-600">
+                            {selectedItems.length} {t.items} · {t.total}: ${selectedItems.reduce((s, id) => { const i = inventory.find(x => x.id === id); return s + (i?.price || 0); }, 0).toFixed(2)}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })()}
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
