@@ -271,6 +271,7 @@ export default function TuxedoAdmin() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedBrand, setSelectedBrand] = useState('all');
   const [selectedSize, setSelectedSize] = useState('all');
+  const [selectedInventoryStore, setSelectedInventoryStore] = useState('all');
   const [showInventoryFilters, setShowInventoryFilters] = useState(false);
   const [quickPayRental, setQuickPayRental] = useState(null);
   const [quickPayMethod, setQuickPayMethod] = useState('cash');
@@ -1225,7 +1226,8 @@ export default function TuxedoAdmin() {
     const matchesCategory = selectedCategory === 'all' || (selectedCategory === '__none__' ? !i.category : i.category === selectedCategory);
     const matchesBrand = selectedBrand === 'all' || i.brand === selectedBrand;
     const matchesSize = selectedSize === 'all' || i.size === selectedSize;
-    return matchesSearch && matchesCategory && matchesBrand && matchesSize;
+    const matchesStore = selectedInventoryStore === 'all' || i.store_id === selectedInventoryStore;
+    return matchesSearch && matchesCategory && matchesBrand && matchesSize && matchesStore;
   });
   const filteredRentals = rentals.filter(r =>
     r.customers?.name?.toLowerCase().includes(searchTerm.toLowerCase()) || searchTerm === '');
@@ -2100,6 +2102,7 @@ export default function TuxedoAdmin() {
                 selectedCategory !== 'all',
                 selectedBrand !== 'all',
                 selectedSize !== 'all',
+                selectedInventoryStore !== 'all',
               ].filter(Boolean).length;
               return (
                 <div className="mb-6">
@@ -2124,7 +2127,7 @@ export default function TuxedoAdmin() {
                     {activeCount > 0 && (
                       <>
                         <span className="text-sm text-gray-500">{filteredInventory.length} {language === 'es' ? 'resultado(s)' : 'result(s)'}</span>
-                        <button onClick={() => { setSelectedCategory('all'); setSelectedBrand('all'); setSelectedSize('all'); }}
+                        <button onClick={() => { setSelectedCategory('all'); setSelectedBrand('all'); setSelectedSize('all'); setSelectedInventoryStore('all'); }}
                           className="text-sm font-bold text-red-500 hover:text-red-700 flex items-center gap-1">
                           <X size={13} /> {language === 'es' ? 'Limpiar' : 'Clear'}
                         </button>
@@ -2195,6 +2198,26 @@ export default function TuxedoAdmin() {
                                 }`}>
                                 {sz === 'all' ? (language === 'es' ? 'Todas las Tallas' : 'All Sizes') : sz}
                                 <span className="ml-1.5 opacity-60 font-normal text-xs">({inventory.filter(i => sz === 'all' ? true : i.size === sz).length})</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Store */}
+                      {stores.length > 1 && (
+                        <div>
+                          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">{t.store}</p>
+                          <div className="flex gap-2 flex-wrap">
+                            {[{ id: 'all', name: language === 'es' ? 'Todas las Tiendas' : 'All Stores' }, ...stores].map(s => (
+                              <button key={s.id} onClick={() => setSelectedInventoryStore(s.id)}
+                                className={`px-4 py-1.5 rounded-full font-bold text-sm transition min-h-[36px] ${
+                                  selectedInventoryStore === s.id
+                                    ? 'bg-emerald-600 text-white shadow'
+                                    : 'bg-gray-50 text-gray-700 border-2 border-gray-200 hover:border-emerald-400'
+                                }`}>
+                                {s.name}
+                                <span className="ml-1.5 opacity-60 font-normal text-xs">({s.id === 'all' ? inventory.length : inventory.filter(i => i.store_id === s.id).length})</span>
                               </button>
                             ))}
                           </div>
