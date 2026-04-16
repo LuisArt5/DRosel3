@@ -788,7 +788,6 @@ export default function TuxedoAdmin() {
                 ? <img src={loginLogo} alt="Logo" className="h-12 w-auto object-contain" />
                 : <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center"><span style={{ fontSize: 20 }}>🎩</span></div>
               }
-              <span className="text-lg font-semibold tracking-wide opacity-80">D'Rosel</span>
             </div>
             <h1 className="text-5xl font-bold leading-tight mb-4">
               Tuxedo<br />Rentals
@@ -818,7 +817,6 @@ export default function TuxedoAdmin() {
                 ? <img src={loginLogo} alt="Logo" className="h-10 w-auto object-contain" />
                 : <span style={{ fontSize: 28 }}>🎩</span>
               }
-              <span className="text-2xl font-bold text-slate-800">D'Rosel Tuxedo Rentals</span>
             </div>
 
             <div className="flex justify-between items-start mb-10">
@@ -890,9 +888,6 @@ export default function TuxedoAdmin() {
               </form>
             )}
 
-            <p className="mt-10 text-center text-xs text-gray-400">
-              © {new Date().getFullYear()} D'Rosel Tuxedo Rentals. All rights reserved.
-            </p>
           </div>
         </div>
       </div>
@@ -1233,7 +1228,6 @@ export default function TuxedoAdmin() {
         <div className="max-w-full px-3 md:px-6 py-3 md:py-4 flex justify-between items-center gap-2 md:gap-4">
           <div className="flex items-center gap-2 md:gap-3 min-w-0">
             {(() => { const s = stores.find(st => st.id === currentStoreId) || stores[0]; return s?.logo_url ? <img src={s.logo_url} alt="Logo" className="h-8 md:h-10 w-auto object-contain flex-shrink-0" /> : null; })()}
-            <h1 className="text-sm md:text-3xl font-bold whitespace-nowrap">D'Rosel Tuxedo Rentals</h1>
           </div>
           <div className="flex items-center gap-2 md:gap-3 flex-wrap justify-end">
             {/* Store Selector */}
