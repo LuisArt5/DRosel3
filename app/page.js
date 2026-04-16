@@ -2094,7 +2094,21 @@ export default function TuxedoAdmin() {
                     const balance = getRentalBalance(r);
                     return (
                       <tr key={r.id} className="border-b hover:bg-gray-50">
-                        <td className="px-6 py-5 font-bold">{r.customers?.name}</td>
+                        <td className="px-6 py-5">
+                          <div className="font-bold">{r.customers?.name}</div>
+                          {r.additional_customer_ids?.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {r.additional_customer_ids.map(id => {
+                                const c = customers.find(c => c.id === id);
+                                return c ? (
+                                  <span key={id} className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">
+                                    {c.name}
+                                  </span>
+                                ) : null;
+                              })}
+                            </div>
+                          )}
+                        </td>
                         <td className="px-6 py-5">{r.event_date || '—'}</td>
                         <td className="px-6 py-5">{r.pickup_date}</td>
                         <td className="px-6 py-5">{r.return_date}</td>
