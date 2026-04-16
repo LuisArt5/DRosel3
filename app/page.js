@@ -784,10 +784,7 @@ export default function TuxedoAdmin() {
           <div style={{ position: 'absolute', bottom: '-100px', left: '-60px', width: '350px', height: '350px', borderRadius: '50%', background: 'rgba(99,102,241,0.12)' }} />
           <div className="relative z-10">
             <div className="flex items-center gap-3 mb-6">
-              {loginLogo
-                ? <img src={loginLogo} alt="Logo" className="w-48 h-auto object-contain" style={{ imageRendering: 'auto', maxWidth: '100%' }} />
-                : <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center"><span style={{ fontSize: 36 }}>🎩</span></div>
-              }
+              <img src="/drosel-logo.png" alt="D'Rosel Logo" className="w-56 h-auto object-contain drop-shadow-lg" style={{ imageRendering: 'auto', maxWidth: '100%' }} />
             </div>
             <p className="text-lg font-semibold opacity-70 leading-relaxed max-w-xs tracking-wide">
               {language === 'es' ? 'Sistema de gestión D\'Rosel' : 'D\'Rosel Management System'}
@@ -810,10 +807,7 @@ export default function TuxedoAdmin() {
           <div className="w-full max-w-md">
             {/* Mobile logo */}
             <div className="lg:hidden flex items-center gap-3 mb-10">
-              {loginLogo
-                ? <img src={loginLogo} alt="Logo" className="w-32 h-auto object-contain" style={{ imageRendering: 'auto' }} />
-                : <span style={{ fontSize: 36 }}>🎩</span>
-              }
+              <img src="/drosel-logo.png" alt="D'Rosel Logo" className="w-36 h-auto object-contain" style={{ imageRendering: 'auto' }} />
             </div>
 
             <div className="flex justify-between items-start mb-10">
@@ -885,6 +879,9 @@ export default function TuxedoAdmin() {
               </form>
             )}
 
+            <p className="mt-10 text-center text-xs text-gray-400">
+              © {new Date().getFullYear()} D'Rosel Tuxedo Rentals. All rights reserved.
+            </p>
           </div>
         </div>
       </div>
