@@ -1535,7 +1535,7 @@ export default function TuxedoAdmin() {
         <div className="max-w-full px-3 md:px-6 py-3 md:py-4 flex justify-between items-center gap-2 md:gap-4">
           <div className="flex items-center gap-3 md:gap-4 min-w-0">
             {(() => { const s = stores.find(st => st.id === currentStoreId) || stores[0]; return s?.logo_url ? <img src={s.logo_url} alt="Logo" className="h-8 md:h-10 w-auto object-contain flex-shrink-0" /> : null; })()}
-            <span className="hidden sm:block text-sm md:text-xl font-semibold tracking-wide text-white/90 whitespace-nowrap" style={{ fontFamily: 'Georgia, serif', letterSpacing: '0.04em' }}>
+            <span className="hidden sm:block text-sm md:text-xl font-bold tracking-wide text-white/90 whitespace-nowrap">
               D&apos;Rosel Tuxedo Rentals
             </span>
           </div>
