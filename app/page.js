@@ -571,9 +571,16 @@ export default function TuxedoAdmin() {
           await supabase.from('inventory').update({ status: 'rented' }).eq('id', itemId);
         }
       }
-      // Sync measurements back to customer profile if any were entered
+      // Sync measurements back to customer profiles
       if (formData.customer_id && formData.measurements && Object.values(formData.measurements).some(v => v)) {
         await supabase.from('customers').update({ measurements: formData.measurements }).eq('id', formData.customer_id);
+      }
+      if (formData.additional_measurements) {
+        for (const [cid, meas] of Object.entries(formData.additional_measurements)) {
+          if (Object.values(meas).some(v => v)) {
+            await supabase.from('customers').update({ measurements: meas }).eq('id', cid);
+          }
+        }
       }
 
       await loadData();
@@ -3391,27 +3398,78 @@ export default function TuxedoAdmin() {
                   <div className="border-2 border-indigo-200 rounded-2xl p-5 bg-indigo-50">
                     <h3 className="text-base font-bold text-indigo-800 mb-3 flex items-center gap-2">
                       <Users size={18} /> {language === 'es' ? 'Personas Adicionales' : 'Additional People'}
-                      <span className="text-xs font-normal text-indigo-400 ml-1">
-                        ({language === 'es' ? 'opcional — cada persona obtiene su propia hoja de medidas' : 'optional — each person gets their own measurement sheet'})
-                      </span>
                     </h3>
-                    {(formData.additional_customer_ids || []).map((cid, idx) => {
+
+                    {(formData.additional_customer_ids || []).map((cid) => {
                       const p = customers.find(c => c.id === cid);
+                      const meas = (formData.additional_measurements || {})[cid] || {};
                       return (
-                        <div key={cid} className="flex items-center justify-between bg-white rounded-xl px-4 py-3 mb-2 border border-indigo-200">
-                          <span className="font-semibold">{p?.name} <span className="text-gray-400 font-normal text-sm">· {p?.phone}</span></span>
-                          <button type="button" onClick={() => setFormData({ ...formData, additional_customer_ids: (formData.additional_customer_ids || []).filter(id => id !== cid) })}
-                            className="text-red-400 hover:text-red-600 ml-4"><X size={16} /></button>
+                        <div key={cid} className="bg-white rounded-2xl border border-indigo-200 mb-3 overflow-hidden">
+                          {/* Person header */}
+                          <div className="flex items-center justify-between px-4 py-3 bg-indigo-50 border-b border-indigo-100">
+                            <span className="font-bold text-indigo-900">{p?.name} <span className="text-gray-400 font-normal text-sm">· {p?.phone}</span></span>
+                            <button type="button" onClick={() => {
+                              const newIds = (formData.additional_customer_ids || []).filter(id => id !== cid);
+                              const newMeas = { ...(formData.additional_measurements || {}) };
+                              delete newMeas[cid];
+                              setFormData({ ...formData, additional_customer_ids: newIds, additional_measurements: newMeas });
+                            }} className="text-red-400 hover:text-red-600"><X size={16} /></button>
+                          </div>
+                          {/* Measurements */}
+                          <div className="p-4">
+                            <p className="text-xs font-bold text-indigo-600 uppercase tracking-wide mb-3 flex items-center gap-1">
+                              <Ruler size={13} /> {t.measurements}
+                              <span className="font-normal normal-case tracking-normal text-indigo-400 ml-1">
+                                ({language === 'es' ? 'actualiza el perfil' : 'updates profile'})
+                              </span>
+                            </p>
+                            <div className="grid grid-cols-3 gap-3">
+                              {[
+                                { key: 'chest', label: t.chest },
+                                { key: 'waist', label: t.waist },
+                                { key: 'inseam', label: t.inseam },
+                                { key: 'jacketSize', label: t.jacketSize },
+                                { key: 'neck', label: t.neck },
+                                { key: 'sleeve', label: t.sleeve },
+                              ].map(({ key, label }) => (
+                                <div key={key}>
+                                  <label className="block text-xs font-bold text-indigo-700 mb-1">{label}</label>
+                                  <div className="relative">
+                                    <input type="number" step="0.25" min="0" placeholder="—"
+                                      value={meas[key] || ''}
+                                      onChange={e => setFormData(fd => ({
+                                        ...fd,
+                                        additional_measurements: {
+                                          ...(fd.additional_measurements || {}),
+                                          [cid]: { ...(fd.additional_measurements?.[cid] || {}), [key]: e.target.value }
+                                        }
+                                      }))}
+                                      className="w-full px-3 py-3 border-2 rounded-xl text-base pr-10 min-h-[48px]" />
+                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">{t.inches}</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
                         </div>
                       );
                     })}
+
                     <select
                       value=""
                       onChange={e => {
                         if (!e.target.value) return;
                         const already = formData.additional_customer_ids || [];
                         if (!already.includes(e.target.value) && e.target.value !== formData.customer_id) {
-                          setFormData({ ...formData, additional_customer_ids: [...already, e.target.value] });
+                          const cust = customers.find(c => c.id === e.target.value);
+                          setFormData({
+                            ...formData,
+                            additional_customer_ids: [...already, e.target.value],
+                            additional_measurements: {
+                              ...(formData.additional_measurements || {}),
+                              [e.target.value]: cust?.measurements || {}
+                            }
+                          });
                         }
                       }}
                       className="w-full px-4 py-3 border-2 border-indigo-200 rounded-2xl text-base bg-white min-h-[48px]">
