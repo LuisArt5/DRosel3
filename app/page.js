@@ -82,6 +82,12 @@ const translations = {
     atCleaner: 'At Cleaner', sentDate: 'Sent Date', markReturned: 'MARK RETURNED',
     noItemsCleaning: 'No items currently at the dry cleaner.',
     fromRental: 'From Rental',
+    // RFID
+    rfidScanner: 'RFID Scanner', rfidAssign: 'Assign RFID Tag',
+    rfidBulkCheckin: 'Bulk Check-In', rfidSearchMode: '← Search Mode',
+    rfidScanItem: 'Scan or type RFID tag…', rfidFind: 'Find',
+    rfidNoActive: 'No active rental', rfidScanned: 'Scanned items:',
+    rfidCommit: 'Commit Check-In', rfidClear: 'Clear',
     // Misc
     noData: 'No data available', store: 'Store', inches: 'in.',
     pending: 'Pending', inProgress: 'In Progress', completed: 'Completed',
@@ -148,12 +154,88 @@ const translations = {
     noItemsCleaning: 'No hay artículos en tintorería actualmente.',
     fromRental: 'De Renta',
     payBalance: 'Pagar Saldo', payNow: 'PAGAR', balanceDue: 'Saldo Pendiente',
+    // RFID
+    rfidScanner: 'Escáner RFID', rfidAssign: 'Asignar Tag RFID',
+    rfidBulkCheckin: 'Devolución Masiva', rfidSearchMode: '← Búsqueda',
+    rfidScanItem: 'Escanea o escribe tag RFID…', rfidFind: 'Buscar',
+    rfidNoActive: 'Sin renta activa', rfidScanned: 'Artículos escaneados:',
+    rfidCommit: 'Registrar Devolución', rfidClear: 'Limpiar',
     noData: 'Sin datos disponibles', store: 'Tienda', inches: 'pulg.',
     pending: 'Pendiente', inProgress: 'En Progreso', completed: 'Completado',
     reserved: 'Reservado', pickedUp: 'Recogido', picked_up: 'Recogido', returned: 'Devuelto',
     cancelled: 'Cancelado',
   }
 };
+
+// ─── RFID Tag Assignment Panel ────────────────────────────────────────────────
+function RfidAssignPanel({ inventory, language, t, onAssign }) {
+  const [selectedItemId, setSelectedItemId] = useState('');
+  const [tagInput, setTagInput] = useState('');
+  const [status, setStatus] = useState(''); // 'success' | 'error' | ''
+  const [statusMsg, setStatusMsg] = useState('');
+  const tagRef = useRef(null);
+
+  const handleAssign = async () => {
+    if (!selectedItemId || !tagInput.trim()) return;
+    const duplicate = inventory.find(i => i.rfid === tagInput.trim() && i.id !== selectedItemId);
+    if (duplicate) {
+      setStatus('error');
+      setStatusMsg(language === 'es'
+        ? `Tag ya asignado a: ${duplicate.name}`
+        : `Tag already assigned to: ${duplicate.name}`);
+      return;
+    }
+    await onAssign(selectedItemId, tagInput.trim());
+    const item = inventory.find(i => i.id === selectedItemId);
+    setStatus('success');
+    setStatusMsg(language === 'es'
+      ? `Tag asignado a ${item?.name}`
+      : `Tag assigned to ${item?.name}`);
+    setTagInput('');
+    setSelectedItemId('');
+    setTimeout(() => setStatus(''), 3000);
+  };
+
+  return (
+    <div className="flex flex-wrap gap-3 items-end">
+      <div className="flex-1 min-w-[180px]">
+        <label className="block text-xs font-bold text-gray-600 mb-1">
+          {language === 'es' ? 'Artículo' : 'Item'}
+        </label>
+        <select value={selectedItemId} onChange={e => { setSelectedItemId(e.target.value); setTimeout(() => tagRef.current?.focus(), 50); }}
+          className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl text-base focus:outline-none focus:border-blue-500 min-h-[48px]">
+          <option value="">{language === 'es' ? '— Selecciona —' : '— Select item —'}</option>
+          {[...inventory].sort((a, b) => a.name.localeCompare(b.name)).map(item => (
+            <option key={item.id} value={item.id}>
+              {item.name} ({item.size}){item.rfid ? ` ✓ ${item.rfid}` : ''}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="flex-1 min-w-[180px]">
+        <label className="block text-xs font-bold text-gray-600 mb-1">
+          {language === 'es' ? 'Tag RFID' : 'RFID Tag'}
+        </label>
+        <input
+          ref={tagRef}
+          type="text"
+          value={tagInput}
+          onChange={e => setTagInput(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') handleAssign(); }}
+          placeholder={language === 'es' ? 'Escanea tag…' : 'Scan tag…'}
+          className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl text-base focus:outline-none focus:border-blue-500 min-h-[48px]"
+          autoComplete="off"
+        />
+      </div>
+      <button onClick={handleAssign} disabled={!selectedItemId || !tagInput.trim()}
+        className="bg-blue-700 text-white px-6 py-3 rounded-2xl font-bold hover:bg-blue-800 min-h-[48px] disabled:opacity-40 disabled:cursor-not-allowed">
+        {language === 'es' ? 'Asignar' : 'Assign'}
+      </button>
+      {status === 'success' && <p className="w-full text-green-600 font-semibold text-sm flex items-center gap-1"><CheckCircle size={14} /> {statusMsg}</p>}
+      {status === 'error' && <p className="w-full text-red-600 font-semibold text-sm flex items-center gap-1"><AlertCircle size={14} /> {statusMsg}</p>}
+    </div>
+  );
+}
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function TuxedoAdmin() {
@@ -190,6 +272,16 @@ export default function TuxedoAdmin() {
   const [quickPayMethod, setQuickPayMethod] = useState('cash');
   const [quickPayOnComplete, setQuickPayOnComplete] = useState(null);
   const [loginLogo, setLoginLogo] = useState('');
+
+  // ── RFID ──────────────────────────────────────────────────────────────────
+  const [rfidScan, setRfidScan] = useState('');
+  const [rfidResult, setRfidResult] = useState(null); // { type: 'rental'|'item', data }
+  const [rfidError, setRfidError] = useState('');
+  const [bulkScanMode, setBulkScanMode] = useState(false);
+  const [bulkScanned, setBulkScanned] = useState([]); // array of item ids scanned
+  const [bulkScanInput, setBulkScanInput] = useState('');
+  const rfidInputRef = useRef(null);
+  const bulkInputRef = useRef(null);
 
   const t = translations[language];
   const today = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })();
@@ -604,6 +696,81 @@ export default function TuxedoAdmin() {
   };
 
   const getStoreName = (storeId) => stores.find(s => s.id === storeId)?.name || '—';
+
+  // ─── RFID Scan-to-Find ────────────────────────────────────────────────────
+  const handleRfidScan = (tag) => {
+    const trimmed = tag.trim();
+    if (!trimmed) return;
+    setRfidError('');
+    setRfidResult(null);
+
+    // Find item by RFID tag
+    const item = inventory.find(i => i.rfid === trimmed);
+    if (!item) {
+      setRfidError(language === 'es' ? `Tag no encontrado: ${trimmed}` : `Tag not found: ${trimmed}`);
+      return;
+    }
+
+    // Find active rental containing this item
+    const rental = rentals.find(r =>
+      r.item_ids?.includes(item.id) &&
+      (r.status === 'reserved' || r.status === 'picked_up')
+    );
+
+    setRfidResult({ item, rental: rental || null });
+  };
+
+  // ─── Bulk RFID Check-In ───────────────────────────────────────────────────
+  const handleBulkScan = (tag) => {
+    const trimmed = tag.trim();
+    if (!trimmed) return;
+    const item = inventory.find(i => i.rfid === trimmed);
+    if (!item) {
+      alert(language === 'es' ? `Tag no encontrado: ${trimmed}` : `Tag not found: ${trimmed}`);
+      return;
+    }
+    setBulkScanned(prev => prev.find(i => i.id === item.id) ? prev : [...prev, item]);
+    setBulkScanInput('');
+    setTimeout(() => bulkInputRef.current?.focus(), 50);
+  };
+
+  const commitBulkCheckIn = async () => {
+    if (bulkScanned.length === 0) return;
+    const itemIds = bulkScanned.map(i => i.id);
+
+    // Find rentals that contain any of these items and are picked_up
+    const affectedRentals = rentals.filter(r =>
+      r.status === 'picked_up' && r.item_ids?.some(id => itemIds.includes(id))
+    );
+
+    // Only return rentals where ALL items have been scanned
+    const fullReturns = affectedRentals.filter(r =>
+      r.item_ids.every(id => itemIds.includes(id))
+    );
+
+    if (fullReturns.length === 0) {
+      alert(language === 'es'
+        ? 'No se encontraron rentas completas para devolver. Escanea todos los artículos de una renta.'
+        : 'No complete rentals found to check in. Scan all items belonging to a rental.');
+      return;
+    }
+
+    const names = fullReturns.map(r => r.customers?.name).join(', ');
+    if (!confirm(language === 'es'
+      ? `¿Registrar devolución de ${fullReturns.length} renta(s) para: ${names}?`
+      : `Check in ${fullReturns.length} rental(s) for: ${names}?`)) return;
+
+    for (const rental of fullReturns) {
+      await supabase.from('rentals').update({ status: 'returned', actual_return_date: today }).eq('id', rental.id);
+      for (const id of rental.item_ids) {
+        await supabase.from('inventory').update({ status: 'cleaning' }).eq('id', id);
+      }
+    }
+
+    await loadData();
+    setBulkScanned([]);
+    setBulkScanMode(false);
+  };
 
   const getCurrentStore = () => stores.find(s => s.id === currentStoreId);
 
@@ -1305,6 +1472,143 @@ export default function TuxedoAdmin() {
               ))}
             </div>
 
+            {/* ── RFID Scanner ── */}
+            <div className="bg-white rounded-3xl shadow-xl p-4 md:p-6 border-2 border-blue-100">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-9 h-9 rounded-full bg-blue-700 flex items-center justify-center flex-shrink-0">
+                  <span className="text-white text-lg font-bold">⌖</span>
+                </div>
+                <h3 className="text-lg md:text-2xl font-bold text-blue-900">
+                  {language === 'es' ? 'Escáner RFID' : 'RFID Scanner'}
+                </h3>
+                {hasPermission('edit') && (
+                  <button
+                    onClick={() => { setBulkScanMode(!bulkScanMode); setBulkScanned([]); setRfidResult(null); setRfidError(''); setTimeout(() => bulkScanMode ? rfidInputRef.current?.focus() : bulkInputRef.current?.focus(), 100); }}
+                    className={`ml-auto px-4 py-2 rounded-xl font-bold text-sm transition min-h-[40px] ${bulkScanMode ? 'bg-blue-700 text-white' : 'bg-blue-50 text-blue-700 border-2 border-blue-200 hover:border-blue-500'}`}>
+                    {bulkScanMode ? (language === 'es' ? '← Búsqueda' : '← Search Mode') : (language === 'es' ? 'Devolución Masiva' : 'Bulk Check-In')}
+                  </button>
+                )}
+              </div>
+
+              {!bulkScanMode ? (
+                /* Search mode */
+                <div>
+                  <div className="flex gap-2">
+                    <input
+                      ref={rfidInputRef}
+                      type="text"
+                      value={rfidScan}
+                      onChange={e => setRfidScan(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') { handleRfidScan(rfidScan); setRfidScan(''); } }}
+                      placeholder={language === 'es' ? 'Escanea o escribe tag RFID…' : 'Scan or type RFID tag…'}
+                      className="flex-1 px-4 py-3 border-2 border-blue-200 rounded-2xl text-base focus:outline-none focus:border-blue-600 min-h-[48px]"
+                      autoComplete="off"
+                    />
+                    <button
+                      onClick={() => { handleRfidScan(rfidScan); setRfidScan(''); }}
+                      className="bg-blue-700 text-white px-6 py-3 rounded-2xl font-bold hover:bg-blue-800 min-h-[48px]">
+                      {language === 'es' ? 'Buscar' : 'Find'}
+                    </button>
+                  </div>
+                  {rfidError && (
+                    <p className="mt-3 text-red-600 font-semibold flex items-center gap-2"><AlertCircle size={16} /> {rfidError}</p>
+                  )}
+                  {rfidResult && (
+                    <div className="mt-4 bg-blue-50 rounded-2xl p-4 border-2 border-blue-200">
+                      <div className="flex justify-between items-start gap-3 flex-wrap">
+                        <div>
+                          <p className="text-lg font-bold text-blue-900">{rfidResult.item.name} — {rfidResult.item.size}</p>
+                          <p className="text-sm text-gray-500">RFID: {rfidResult.item.rfid} · {rfidResult.item.category || t.uncategorized}</p>
+                          <span className={`inline-block mt-1 px-3 py-1 rounded-full text-xs font-bold ${
+                            rfidResult.item.status === 'available' ? 'bg-slate-100 text-slate-600' :
+                            rfidResult.item.status === 'rented' ? 'bg-sky-100 text-sky-700' :
+                            rfidResult.item.status === 'cleaning' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+                            {t[rfidResult.item.status] || rfidResult.item.status}
+                          </span>
+                        </div>
+                        {rfidResult.rental && (
+                          <div className="bg-white rounded-xl p-3 border border-blue-200 min-w-[200px]">
+                            <p className="font-bold text-blue-900">{rfidResult.rental.customers?.name}</p>
+                            <p className="text-sm text-gray-500">{t.pickupDate}: {rfidResult.rental.pickup_date}</p>
+                            <p className="text-sm text-gray-500">{t.returnDate}: {rfidResult.rental.return_date}</p>
+                            <p className="text-sm font-bold text-rose-600">${getRentalBalance(rfidResult.rental).toFixed(2)} {t.balance}</p>
+                            <div className="flex gap-2 mt-2 flex-wrap">
+                              {rfidResult.rental.status === 'picked_up' && hasPermission('edit') && (
+                                <button onClick={() => { handleCheckIn(rfidResult.rental.id); setRfidResult(null); }}
+                                  className="bg-blue-700 text-white px-3 py-2 rounded-xl font-bold text-sm hover:bg-blue-800 min-h-[40px]">
+                                  {t.checkInNow}
+                                </button>
+                              )}
+                              {rfidResult.rental.status === 'reserved' && hasPermission('edit') && (
+                                <button onClick={() => { handlePickup(rfidResult.rental.id); setRfidResult(null); }}
+                                  className="bg-green-600 text-white px-3 py-2 rounded-xl font-bold text-sm hover:bg-green-700 min-h-[40px]">
+                                  {t.markPickedUp}
+                                </button>
+                              )}
+                              <button onClick={() => openModal('rental', rfidResult.rental)}
+                                className="bg-gray-100 text-gray-700 px-3 py-2 rounded-xl font-bold text-sm hover:bg-gray-200 min-h-[40px]">
+                                {t.edit}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                        {!rfidResult.rental && (
+                          <p className="text-sm text-gray-400 italic">{language === 'es' ? 'Sin renta activa' : 'No active rental'}</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                /* Bulk check-in mode */
+                <div>
+                  <p className="text-sm text-gray-500 mb-3">
+                    {language === 'es'
+                      ? 'Escanea todos los artículos de una o más rentas. Al finalizar, haz clic en "Registrar Devolución".'
+                      : 'Scan all items for one or more rentals, then click "Commit Check-In".'}
+                  </p>
+                  <div className="flex gap-2 mb-4">
+                    <input
+                      ref={bulkInputRef}
+                      type="text"
+                      value={bulkScanInput}
+                      onChange={e => setBulkScanInput(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') handleBulkScan(bulkScanInput); }}
+                      placeholder={language === 'es' ? 'Escanea tag RFID…' : 'Scan RFID tag…'}
+                      className="flex-1 px-4 py-3 border-2 border-blue-200 rounded-2xl text-base focus:outline-none focus:border-blue-600 min-h-[48px]"
+                      autoComplete="off"
+                      autoFocus
+                    />
+                  </div>
+                  {bulkScanned.length > 0 && (
+                    <div className="mb-4">
+                      <p className="text-sm font-bold text-blue-800 mb-2">{language === 'es' ? 'Artículos escaneados:' : 'Scanned items:'}</p>
+                      <div className="flex flex-wrap gap-2">
+                        {bulkScanned.map(item => (
+                          <div key={item.id} className="flex items-center gap-1 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">
+                            <CheckCircle size={14} />
+                            {item.name} {item.size}
+                            <button onClick={() => setBulkScanned(prev => prev.filter(i => i.id !== item.id))} className="ml-1 hover:text-red-600"><X size={14} /></button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex gap-3">
+                    <button onClick={commitBulkCheckIn}
+                      disabled={bulkScanned.length === 0}
+                      className="bg-blue-700 text-white px-6 py-3 rounded-2xl font-bold hover:bg-blue-800 min-h-[48px] disabled:opacity-40 disabled:cursor-not-allowed">
+                      {language === 'es' ? `Registrar Devolución (${bulkScanned.length})` : `Commit Check-In (${bulkScanned.length})`}
+                    </button>
+                    <button onClick={() => setBulkScanned([])}
+                      className="bg-gray-100 text-gray-700 px-4 py-3 rounded-2xl font-bold hover:bg-gray-200 min-h-[48px]">
+                      {language === 'es' ? 'Limpiar' : 'Clear'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Overdue */}
             {overdue.length > 0 && (
               <div className="bg-rose-50 border-4 border-rose-400 rounded-3xl p-4 md:p-8">
@@ -1644,6 +1948,34 @@ export default function TuxedoAdmin() {
                 </button>
               )}
             </div>
+
+            {/* ── RFID Tag Assignment ── */}
+            {hasPermission('edit') && (
+              <div className="bg-white rounded-3xl shadow-xl p-4 md:p-6 border-2 border-blue-100 mb-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-9 h-9 rounded-full bg-blue-700 flex items-center justify-center flex-shrink-0">
+                    <span className="text-white text-lg font-bold">⌖</span>
+                  </div>
+                  <h3 className="text-lg md:text-2xl font-bold text-blue-900">
+                    {language === 'es' ? 'Asignar Tag RFID' : 'Assign RFID Tag'}
+                  </h3>
+                </div>
+                <p className="text-sm text-gray-500 mb-4">
+                  {language === 'es'
+                    ? 'Selecciona un artículo, luego escanea el tag RFID para asignarlo.'
+                    : 'Select an item, then scan the RFID tag to assign it.'}
+                </p>
+                <RfidAssignPanel
+                  inventory={inventory}
+                  language={language}
+                  t={t}
+                  onAssign={async (itemId, tag) => {
+                    await supabase.from('inventory').update({ rfid: tag }).eq('id', itemId);
+                    await loadData();
+                  }}
+                />
+              </div>
+            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredInventory.map(item => (
