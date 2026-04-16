@@ -785,13 +785,10 @@ export default function TuxedoAdmin() {
           <div className="relative z-10">
             <div className="flex items-center gap-3 mb-6">
               {loginLogo
-                ? <img src={loginLogo} alt="Logo" className="h-12 w-auto object-contain" />
-                : <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center"><span style={{ fontSize: 20 }}>🎩</span></div>
+                ? <img src={loginLogo} alt="Logo" className="w-48 h-auto object-contain" style={{ imageRendering: 'auto', maxWidth: '100%' }} />
+                : <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center"><span style={{ fontSize: 36 }}>🎩</span></div>
               }
             </div>
-            <h1 className="text-5xl font-bold leading-tight mb-4">
-              Tuxedo<br />Rentals
-            </h1>
             <p className="text-lg font-semibold opacity-70 leading-relaxed max-w-xs tracking-wide">
               {language === 'es' ? 'Sistema de gestión D\'Rosel' : 'D\'Rosel Management System'}
             </p>
@@ -814,8 +811,8 @@ export default function TuxedoAdmin() {
             {/* Mobile logo */}
             <div className="lg:hidden flex items-center gap-3 mb-10">
               {loginLogo
-                ? <img src={loginLogo} alt="Logo" className="h-10 w-auto object-contain" />
-                : <span style={{ fontSize: 28 }}>🎩</span>
+                ? <img src={loginLogo} alt="Logo" className="w-32 h-auto object-contain" style={{ imageRendering: 'auto' }} />
+                : <span style={{ fontSize: 36 }}>🎩</span>
               }
             </div>
 
